@@ -279,6 +279,26 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .approval-item-actions { display:flex; gap:6px; flex-shrink:0; }
 .approval-notes { width:160px; border:1px solid var(--border); border-radius:var(--radius); padding:5px 8px; font-size:11px; background:var(--body-bg); color:var(--ink); }
 .approvals-empty { color:var(--ink-light); font-size:14px; text-align:center; padding:48px 0; }
+/* ── CONFIG MANAGER ── */
+.cfgmgr-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9100; display:none; flex-direction:column; }
+.cfgmgr-overlay.show { display:flex; }
+.cfgmgr-header { padding:14px 28px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.cfgmgr-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:2px; text-transform:uppercase; flex:1; }
+.cfgmgr-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+.cfgmgr-tab { padding:5px 14px; border:1px solid var(--border); border-radius:var(--radius); font-size:12px; font-weight:600; cursor:pointer; background:var(--body-bg); color:var(--ink-light); }
+.cfgmgr-tab.active { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+.cfgmgr-body { flex:1; overflow-y:auto; padding:24px 28px; }
+.cfgmgr-table { width:100%; border-collapse:collapse; font-size:13px; }
+.cfgmgr-table th { text-align:left; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-light); padding:6px 10px; border-bottom:2px solid var(--border); }
+.cfgmgr-table td { padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.cfgmgr-table tr:hover td { background:var(--body-bg); }
+.cfgmgr-input { border:1px solid var(--border); border-radius:var(--radius); padding:4px 8px; font-size:13px; background:var(--body-bg); color:var(--ink); width:100%; box-sizing:border-box; }
+.cfgmgr-input:focus { outline:none; border-color:var(--gold); }
+.cfgmgr-add { display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; padding:16px 0 0; border-top:1px solid var(--border); margin-top:16px; }
+.cfgmgr-add-field { display:flex; flex-direction:column; gap:3px; }
+.cfgmgr-add-field label { font-size:11px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-light); }
+.cfgmgr-add-field input { border:1px solid var(--border); border-radius:var(--radius); padding:6px 10px; font-size:13px; background:var(--body-bg); color:var(--ink); width:160px; }
+.cfgmgr-empty { color:var(--ink-light); font-size:13px; padding:24px 0; text-align:center; }
 .toast.loading { border-left-color:var(--gold); }
 .toast.warn    { border-left-color:var(--amber); }
 
@@ -702,6 +722,7 @@ body.readonly .qc-check { pointer-events:none; }
   <div class="toolbar-divider"></div>
   <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="openSuggestModal()">＋ Suggest Item</button>
   <button class="btn btn-outline admin-only" id="approvals-btn" style="padding:5px 12px;font-size:11px;display:none;" onclick="openApprovalsPanel()">🔔 Approvals<span class="approval-badge" id="approval-badge"></span></button>
+  <button class="btn btn-outline admin-only" id="cfgmgr-btn" style="padding:5px 12px;font-size:11px;display:none;" onclick="openConfigManager()">⚙ Config</button>
 </div>
 
 <!-- STATUS BAR -->
@@ -1281,6 +1302,8 @@ function applyRole(role, username) {
   if (unlockBtn) unlockBtn.style.display = role === 'admin' ? 'inline-flex' : 'none';
   const delBtn = document.getElementById('delete-job-btn');
   if (delBtn) delBtn.style.display = role === 'admin' ? 'inline-flex' : 'none';
+  const cfgBtn = document.getElementById('cfgmgr-btn');
+  if (cfgBtn) cfgBtn.style.display = role === 'admin' ? '' : 'none';
 }
 
 // ── CONFIG
@@ -2397,6 +2420,100 @@ function updateOfflineBanner() {
   } else { banner.classList.remove('show'); }
 }
 
+// ── CONFIG MANAGER ────────────────────────────────
+let cfgActiveType = 'labour';
+
+function openConfigManager() {
+  document.getElementById('cfgmgr-overlay').classList.add('show');
+  const tabs = document.getElementById('cfgmgr-tabs');
+  tabs.innerHTML = Object.entries(CONFIG_TYPES).map(([k,v]) =>
+    `<button class="cfgmgr-tab${k===cfgActiveType?' active':''}" onclick="switchCfgTab('${k}')">${v.label}</button>`
+  ).join('');
+  renderConfigTable(cfgActiveType);
+}
+function closeConfigManager() { document.getElementById('cfgmgr-overlay').classList.remove('show'); }
+function switchCfgTab(type) {
+  cfgActiveType = type;
+  document.querySelectorAll('.cfgmgr-tab').forEach(t => t.classList.toggle('active', t.textContent === CONFIG_TYPES[type].label));
+  renderConfigTable(type);
+}
+
+async function renderConfigTable(type) {
+  const cfg = CONFIG_TYPES[type];
+  const body = document.getElementById('cfgmgr-body');
+  body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
+  const { data, error } = await sb.from(cfg.table).select('*').eq('status','approved').order('sort_order');
+  if (error) { body.innerHTML = `<div class="cfgmgr-empty">Error: ${error.message}</div>`; return; }
+
+  const headers = cfg.fields.map(f => `<th>${f.label}</th>`).join('') + '<th style="width:120px;"></th>';
+  const rows = (data||[]).map(item => {
+    const cells = cfg.fields.map(f =>
+      `<td><input class="cfgmgr-input" data-field="${f.k}" data-id="${item.id}" type="${f.type}" value="${item[f.k]??''}" step="${f.type==='number'?'0.01':''}"></td>`
+    ).join('');
+    return `<tr id="cfgrow-${item.id}">${cells}
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;color:var(--green);" onclick="saveCfgRow('${cfg.table}','${item.id}','${type}')">✓ Save</button>
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;color:var(--red);margin-left:4px;" onclick="deleteCfgRow('${cfg.table}','${item.id}','${type}')">✕</button>
+      </td></tr>`;
+  }).join('');
+
+  const addFields = cfg.fields.map(f =>
+    `<div class="cfgmgr-add-field"><label>${f.label}${f.req?' *':''}</label><input type="${f.type}" id="cfgadd-${f.k}" placeholder="${f.label}" step="${f.type==='number'?'0.01':''}"></div>`
+  ).join('');
+
+  body.innerHTML = `
+    <table class="cfgmgr-table">
+      <thead><tr>${headers}</tr></thead>
+      <tbody>${rows || `<tr><td colspan="${cfg.fields.length+1}" class="cfgmgr-empty">No items yet.</td></tr>`}</tbody>
+    </table>
+    <div class="cfgmgr-add">
+      ${addFields}
+      <button class="btn btn-save" style="padding:6px 16px;align-self:flex-end;" onclick="addCfgRow('${cfg.table}','${type}')">＋ Add</button>
+    </div>`;
+}
+
+async function saveCfgRow(table, id, type) {
+  const cfg = CONFIG_TYPES[type];
+  const payload = {};
+  document.querySelectorAll(`#cfgrow-${id} [data-field]`).forEach(input => {
+    payload[input.dataset.field] = input.type === 'number' ? (parseFloat(input.value)||0) : input.value.trim();
+  });
+  payload.updated_at = new Date().toISOString();
+  const { error } = await sb.from(table).update(payload).eq('id', id);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Saved.', 'success');
+  await loadConfig();
+}
+
+async function deleteCfgRow(table, id, type) {
+  try { await showConfirm('Delete Item', 'Remove this config item? Existing job cards are not affected.', 'Delete', true); }
+  catch(e) { return; }
+  const { error } = await sb.from(table).delete().eq('id', id);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('Deleted.', 'success');
+  await loadConfig();
+  await renderConfigTable(type);
+}
+
+async function addCfgRow(table, type) {
+  const cfg = CONFIG_TYPES[type];
+  const payload = { status: 'approved', submitted_by: currentUserId };
+  for (const f of cfg.fields) {
+    const el = document.getElementById('cfgadd-' + f.k);
+    if (!el) continue;
+    if (f.req && !el.value.trim()) { showToast('⚠ ' + f.label + ' is required.', 'warn'); el.focus(); return; }
+    payload[f.k] = f.type === 'number' ? (parseFloat(el.value)||0) : el.value.trim();
+  }
+  const nameKey = cfg.fields[0].k;
+  const { data: existing } = await sb.from(table).select('id').eq(nameKey, payload[nameKey]).eq('status','approved').limit(1);
+  if (existing && existing.length) { showToast(`⚠ "${payload[nameKey]}" already exists.`, 'warn'); return; }
+  const { error } = await sb.from(table).insert(payload);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Added.', 'success');
+  await loadConfig();
+  await renderConfigTable(type);
+}
+
 // ── CONFIG SUGGEST & APPROVALS ────────────────────
 const CONFIG_TYPES = {
   labour:        { label:'Labour Classification', table:'config_labour',       fields:[{k:'classification',label:'Classification',type:'text',req:true},{k:'workshop_rate_ttd',label:'Workshop Rate (TTD/hr)',type:'number'},{k:'onsite_rate_ttd',label:'Onsite Rate (TTD/hr)',type:'number'}] },
@@ -2547,6 +2664,16 @@ function showToast(msg, type='success') {
       <button class="btn btn-save" id="suggest-submit-btn" onclick="submitSuggestion()">Submit for Approval</button>
     </div>
   </div>
+</div>
+
+<!-- ── CONFIG MANAGER ── -->
+<div class="cfgmgr-overlay" id="cfgmgr-overlay">
+  <div class="cfgmgr-header">
+    <h2>Config Manager</h2>
+    <div class="cfgmgr-tabs" id="cfgmgr-tabs"></div>
+    <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="closeConfigManager()">✕ Close</button>
+  </div>
+  <div class="cfgmgr-body" id="cfgmgr-body"></div>
 </div>
 
 <!-- ── APPROVALS PANEL ── -->
