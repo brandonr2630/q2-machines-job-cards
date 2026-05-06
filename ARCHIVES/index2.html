@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Card — Q2 Machines</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#F5C500">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #F5C500;
+  --gold-dark: #C49B00;
+  --gold-light: #FFF3B0;
+  --ink: #1A1A1A;
+  --ink-mid: #3D3D3D;
+  --ink-light: #6B6B6B;
+  --border: #E0E0E0;
+  --border-strong: #BDBDBD;
+  --surface: #FFFFFF;
+  --surface-2: #F7F7F5;
+  --surface-3: #EFEFEC;
+  --red: #D32F2F;
+  --red-bg: #FFEBEE;
+  --green: #2E7D32;
+  --green-bg: #E8F5E9;
+  --blue: #1565C0;
+  --blue-bg: #E3F2FD;
+  --amber: #E65100;
+  --amber-bg: #FFF3E0;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#F4F3EF; color:var(--ink); font-family:'Barlow',sans-serif; font-size:13px; min-height:100vh; }
+
+/* ── TOPBAR ── */
+.topbar { background:var(--ink); border-bottom:4px solid var(--gold); padding:0 32px; display:flex; align-items:stretch; justify-content:space-between; gap:16px; min-height:72px; }
+.brand { display:flex; align-items:center; gap:14px; padding:12px 0; }
+.brand-logo { width:52px; height:52px; border-radius:var(--radius); overflow:hidden; background:var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.brand-logo img { width:100%; height:100%; object-fit:contain; }
+.brand-text .name { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#FFFFFF; line-height:1.1; }
+.brand-text .address { font-size:10px; color:#9E9E9E; letter-spacing:0.5px; margin-top:2px; line-height:1.5; }
+.topbar-center { display:flex; align-items:center; }
+.topbar-center .title { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; letter-spacing:6px; text-transform:uppercase; color:var(--gold); }
+.topbar-right { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:4px; }
+.job-no-label { font-size:9px; color:#9E9E9E; letter-spacing:1.5px; text-transform:uppercase; }
+.job-no-value { font-family:'Share Tech Mono',monospace; font-size:22px; color:var(--gold); letter-spacing:2px; }
+.last-saved { font-size:9px; color:#757575; font-family:'Share Tech Mono',monospace; }
+
+/* ── TOOLBAR ── */
+.toolbar { background:#FFFFFF; border-bottom:1px solid var(--border); padding:8px 32px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.toolbar-section { display:flex; align-items:center; gap:8px; }
+.toolbar-divider { width:1px; height:28px; background:var(--border); }
+.search-wrap { display:flex; align-items:center; gap:6px; flex:1; min-width:240px; }
+.search-select { background:#F7F7F5; border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 8px; font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; }
+.search-input { background:#F7F7F5; border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 10px; font-family:'Barlow',sans-serif; font-size:12px; flex:1; outline:none; transition:border-color 0.15s; }
+.search-input:focus { border-color:var(--gold); background:#FFFDF0; }
+.search-results { position:fixed; z-index:1000; background:#FFFFFF; border:1px solid var(--gold); border-radius:var(--radius); box-shadow:var(--shadow-md); min-width:320px; max-height:280px; overflow-y:auto; }
+.search-result-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.1s; }
+.search-result-item:hover { background:var(--surface-2); }
+.sri-jobno { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--gold-dark); font-weight:600; }
+.sri-customer { font-size:13px; font-weight:500; color:var(--ink); }
+.sri-meta { font-size:11px; color:var(--ink-light); margin-top:2px; }
+.search-empty { padding:14px; color:var(--ink-light); font-size:12px; text-align:center; }
+
+/* ── STATUS BAR ── */
+.statusbar { background:#FFFFFF; border-bottom:2px solid var(--border); padding:8px 32px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.status-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); }
+.status-options { display:flex; gap:6px; flex-wrap:wrap; }
+.status-btn { padding:4px 14px; border-radius:20px; border:1.5px solid var(--border-strong); background:transparent; color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.15s; }
+.status-btn:hover { border-color:var(--gold); color:var(--gold-dark); }
+.status-btn.active { background:var(--gold); border-color:var(--gold); color:var(--ink); font-weight:700; }
+.status-btn.active.green { background:var(--green); border-color:var(--green); color:#fff; }
+.status-btn.active.red { background:var(--red); border-color:var(--red); color:#fff; }
+.status-btn.active.blue { background:var(--blue); border-color:var(--blue); color:#fff; }
+.status-btn.active.dark { background:var(--ink); border-color:var(--ink); color:#fff; }
+.priority-wrap { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.priority-select { background:#F7F7F5; border:1px solid var(--border); color:var(--ink); padding:5px 10px; border-radius:var(--radius); font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; }
+.job-category-wrap { display:flex; align-items:center; gap:6px; }
+.cat-btn { padding:4px 14px; border-radius:20px; border:1.5px solid var(--border-strong); background:transparent; color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.15s; }
+.cat-btn.active { background:var(--ink); border-color:var(--ink); color:#fff; }
+
+/* ── LOCK BANNER ── */
+.lock-banner { background:var(--red-bg); border-bottom:2px solid var(--red); padding:8px 32px; display:none; align-items:center; gap:12px; }
+.lock-banner.show { display:flex; }
+.lock-banner-text { font-size:12px; font-weight:600; color:var(--red); flex:1; }
+.offline-banner { background:var(--amber-bg); border-bottom:2px solid var(--amber); padding:6px 32px; display:none; align-items:center; gap:10px; font-size:12px; color:var(--amber); }
+.offline-banner.show { display:flex; }
+.sync-badge { background:var(--amber); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 7px; margin-left:6px; }
+
+/* ── MAIN ── */
+.main-wrap { max-width:1200px; margin:0 auto; padding:20px 32px; display:flex; flex-direction:column; gap:16px; }
+
+/* ── CARD ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow); }
+.card-header { background:var(--ink); border-bottom:3px solid var(--gold); padding:10px 16px; display:flex; align-items:center; gap:10px; }
+.card-header-icon { font-size:14px; }
+.card-header-title { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold); flex:1; }
+.card-header-badge { font-size:10px; background:rgba(245,197,0,0.15); color:var(--gold); border:1px solid rgba(245,197,0,0.3); border-radius:10px; padding:2px 8px; font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; }
+.card-body { padding:16px; }
+
+/* ── FORM ── */
+.form-grid { display:grid; gap:12px; }
+.grid-2 { grid-template-columns:1fr 1fr; }
+.grid-3 { grid-template-columns:1fr 1fr 1fr; }
+.grid-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.span-2 { grid-column:span 2; }
+.span-3 { grid-column:span 3; }
+.span-4 { grid-column:span 4; }
+.field { display:flex; flex-direction:column; gap:4px; }
+.field-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); }
+.field input,.field select,.field textarea { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:7px 10px; font-family:'Barlow',sans-serif; font-size:13px; transition:border-color 0.15s,background 0.15s; outline:none; }
+.field input:focus,.field select:focus,.field textarea:focus { border-color:var(--gold); background:#FFFDF0; }
+.field textarea { resize:vertical; min-height:60px; }
+.field select option { background:#fff; }
+.field input[type="date"],.field input[type="time"] { font-family:'Share Tech Mono',monospace; }
+
+/* ── SECTION DIVIDER ── */
+.section-divider { display:flex; align-items:center; gap:10px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink-light); margin:4px 0; }
+.section-divider::before,.section-divider::after { content:''; flex:1; border-top:1px solid var(--border); }
+
+/* ── DYNAMIC TABLE ── */
+.dyn-table { width:100%; border-collapse:collapse; }
+.dyn-table thead tr { background:var(--surface-3); border-bottom:2px solid var(--border); }
+.dyn-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); padding:8px 8px; text-align:left; white-space:nowrap; }
+.dyn-table th.right { text-align:right; }
+.dyn-table tbody tr { border-bottom:1px solid var(--border); transition:background 0.1s; }
+.dyn-table tbody tr:hover { background:var(--surface-2); }
+.dyn-table td { padding:4px 4px; vertical-align:middle; }
+.dyn-table td.right { text-align:right; padding-right:8px; }
+.dyn-table tfoot tr { border-top:2px solid var(--border); background:var(--surface-2); }
+.dyn-table tfoot td { padding:8px 10px; font-weight:600; color:var(--ink-mid); font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+.dyn-table tfoot td.right { text-align:right; }
+.dyn-table td input,.dyn-table td select { background:transparent; border:1px solid transparent; border-radius:var(--radius); color:var(--ink); padding:5px 6px; font-family:'Barlow',sans-serif; font-size:12px; width:100%; outline:none; transition:border-color 0.15s,background 0.15s; }
+.dyn-table td input:focus,.dyn-table td select:focus { border-color:var(--gold); background:#FFFDF0; }
+.dyn-table td input.num { text-align:right; font-family:'Share Tech Mono',monospace; font-size:12px; }
+.dyn-table td input[type="date"],.dyn-table td input[type="time"] { font-family:'Share Tech Mono',monospace; font-size:11px; }
+.dyn-table td .row-total { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--ink-mid); text-align:right; padding-right:6px; min-width:80px; display:block; font-weight:600; }
+.btn-add-row { margin-top:10px; padding:6px 14px; background:transparent; border:1.5px dashed var(--border-strong); border-radius:var(--radius); color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-add-row:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-del { background:transparent; border:none; color:var(--border-strong); cursor:pointer; font-size:14px; padding:4px 6px; border-radius:3px; transition:color 0.15s; line-height:1; }
+.btn-del:hover { color:var(--red); }
+
+/* ── TASK SUB-ROWS ── */
+.task-subrows { background:var(--surface-2); }
+.task-subrow td { padding:3px 4px; }
+.task-subrow-inner { display:flex; align-items:center; gap:6px; padding:3px 8px 3px 32px; }
+.task-subrow-label { font-size:10px; color:var(--ink-light); letter-spacing:0.5px; white-space:nowrap; }
+.task-subrow select,.task-subrow input { background:#fff; border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:4px 8px; font-size:11px; font-family:'Barlow',sans-serif; outline:none; }
+.task-subrow select:focus,.task-subrow input:focus { border-color:var(--gold); }
+.btn-add-task { padding:3px 10px; background:transparent; border:1px dashed var(--border); border-radius:var(--radius); color:var(--ink-light); font-size:10px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:0.5px; cursor:pointer; margin-left:32px; margin-bottom:4px; }
+.btn-add-task:hover { border-color:var(--gold); color:var(--gold-dark); }
+.ot-row { background:#FFF8E1 !important; }
+.ot-badge { font-size:9px; background:var(--amber-bg); color:var(--amber); border:1px solid #FFCC80; border-radius:4px; padding:1px 5px; font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:0.5px; }
+
+/* ── COST SUMMARY ── */
+.cost-summary { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.cost-breakdown { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.cost-breakdown table { width:100%; border-collapse:collapse; }
+.cost-breakdown td { padding:8px 14px; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-mid); }
+.cost-breakdown td:last-child { text-align:right; font-family:'Share Tech Mono',monospace; color:var(--ink); font-weight:600; }
+.cost-breakdown tr.total-row td { font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:1px; text-transform:uppercase; background:var(--ink); color:#fff; border:none; }
+.cost-breakdown tr.total-row td:last-child { color:var(--gold); font-size:16px; }
+.cost-meta { display:flex; flex-direction:column; gap:10px; }
+.admin-locked { background:var(--surface-3); border-radius:var(--radius); padding:12px; border:1.5px dashed var(--border-strong); display:flex; flex-direction:column; gap:8px; }
+.admin-locked-label { font-size:10px; color:var(--ink-light); font-weight:600; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+.admin-locked-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; filter:blur(4px); pointer-events:none; transition:filter 0.3s; }
+.admin-locked-fields.unlocked { filter:none; pointer-events:all; }
+.btn-unlock { padding:4px 12px; background:transparent; border:1px solid var(--border-strong); border-radius:var(--radius); color:var(--ink-light); font-size:11px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:1px; cursor:pointer; transition:all 0.15s; }
+.btn-unlock:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-unlock.unlocked { border-color:var(--green); color:var(--green); }
+
+/* ── QC ── */
+.qc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.qc-item { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:flex; align-items:center; gap:10px; }
+.qc-check { width:20px; height:20px; border:2px solid var(--border-strong); border-radius:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; font-size:11px; }
+.qc-check.checked { background:var(--green); border-color:var(--green); color:#fff; }
+.qc-check.failed { background:var(--red); border-color:var(--red); color:#fff; }
+.qc-text { font-size:11px; line-height:1.4; color:var(--ink-mid); }
+
+/* ── SIGN-OFF ── */
+.signoff-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.signoff-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:12px; }
+.signoff-role { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin-bottom:8px; }
+.signoff-line { border-top:1px solid var(--border-strong); margin-top:32px; padding-top:6px; font-size:10px; color:var(--ink-light); display:flex; justify-content:space-between; }
+
+/* ── REGISTER TABLE (drawings, specs, reports) ── */
+.register-table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+.register-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); padding:6px 8px; text-align:left; background:var(--surface-3); border-bottom:1px solid var(--border); }
+.register-table td { padding:4px 4px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.register-table td input,.register-table td select { background:var(--surface-2); border:1px solid transparent; border-radius:var(--radius); color:var(--ink); padding:5px 7px; font-family:'Barlow',sans-serif; font-size:12px; width:100%; outline:none; transition:border-color 0.15s,background 0.15s; }
+.register-table td input:focus,.register-table td select:focus { border-color:var(--gold); background:#FFFDF0; }
+
+/* ── HSE SECTION ── */
+.hse-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+
+/* ── ACTION BAR ── */
+.action-bar { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; padding:0 0 24px; }
+.btn { padding:9px 22px; border-radius:var(--radius); font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; border:1.5px solid; transition:all 0.15s; display:inline-flex; align-items:center; gap:7px; }
+.btn-outline { background:transparent; border-color:var(--border-strong); color:var(--ink-light); }
+.btn-outline:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-primary { background:var(--gold); border-color:var(--gold); color:var(--ink); }
+.btn-primary:hover { background:var(--gold-dark); border-color:var(--gold-dark); }
+.btn-save { background:var(--ink); border-color:var(--ink); color:#fff; }
+.btn-save:hover { background:var(--ink-mid); border-color:var(--ink-mid); }
+.btn-danger { background:transparent; border-color:var(--red); color:var(--red); }
+.btn-danger:hover { background:var(--red); color:#fff; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--ink); border-radius:var(--radius); padding:12px 20px; font-size:13px; z-index:9999; display:none; box-shadow:var(--shadow-md); max-width:320px; color:#fff; border-left:4px solid var(--gold); }
+.toast.show { display:flex; align-items:center; gap:10px; }
+.toast.success { border-left-color:var(--green); }
+.toast.error { border-left-color:var(--red); }
+.toast.loading { border-left-color:var(--gold); }
+.toast.warn { border-left-color:var(--amber); }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9000; display:none; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:#fff; border-radius:var(--radius-lg); padding:24px; max-width:400px; width:90%; box-shadow:var(--shadow-md); }
+.modal h3 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink); margin-bottom:12px; }
+.modal p { font-size:13px; color:var(--ink-light); margin-bottom:12px; line-height:1.6; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.pin-input { width:100%; padding:10px 14px; font-family:'Share Tech Mono',monospace; font-size:20px; letter-spacing:6px; text-align:center; border:2px solid var(--border); border-radius:var(--radius); outline:none; color:var(--ink); background:var(--surface-2); }
+.pin-input:focus { border-color:var(--gold); background:#FFFDF0; }
+
+/* ── READONLY ── */
+body.readonly .field input, body.readonly .field select, body.readonly .field textarea,
+body.readonly .dyn-table td input, body.readonly .dyn-table td select,
+body.readonly .register-table td input, body.readonly .register-table td select { pointer-events:none; background:var(--surface-3); color:var(--ink-mid); }
+body.readonly .btn-add-row, body.readonly .btn-add-task, body.readonly .btn-del { display:none; }
+body.readonly .action-bar .btn-save { opacity:0.4; pointer-events:none; }
+body.readonly .qc-check { pointer-events:none; }
+
+/* ── PRINT ── */
+@media print {
+  body { background:#fff; color:#000; font-size:11px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .toolbar,.statusbar,.action-bar,.lock-banner,.offline-banner,.toast { display:none !important; }
+  .topbar { background:var(--ink) !important; border-bottom:4px solid var(--gold) !important; }
+  .brand-text .name { color:#fff !important; }
+  .topbar-center .title { color:var(--gold) !important; }
+  .job-no-value { color:var(--gold) !important; }
+  .card { break-inside:avoid; box-shadow:none; border:1px solid #ddd; }
+  .card-header { background:var(--ink) !important; }
+  .card-header-title { color:var(--gold) !important; }
+  .main-wrap { padding:8px 16px; max-width:100%; }
+  .field input,.field select,.field textarea { background:#f9f9f9; border:1px solid #ccc; color:#000; }
+  .dyn-table td input,.dyn-table td select { background:transparent; border-bottom:1px solid #ccc; color:#000; }
+  .cost-breakdown tr.total-row td { background:var(--ink) !important; color:#fff !important; }
+  .cost-breakdown tr.total-row td:last-child { color:var(--gold) !important; }
+  .admin-locked-fields { filter:none !important; }
+  .admin-locked-fields .field input { background:#f9f9f9; border:1px solid #ccc; color:#000; }
+  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr 1fr; }
+  .qc-grid { grid-template-columns:repeat(2,1fr); }
+  .cost-summary { grid-template-columns:1fr; }
+  .signoff-box { background:#f9f9f9; border:1px solid #ccc; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width:768px) {
+  .topbar { padding:12px 16px; }
+  .main-wrap { padding:12px 16px; }
+  .toolbar { padding:8px 16px; }
+  .statusbar { padding:8px 16px; }
+  .grid-3,.grid-4 { grid-template-columns:1fr 1fr; }
+  .grid-2 { grid-template-columns:1fr; }
+  .span-2,.span-3,.span-4 { grid-column:span 1; }
+  .cost-summary { grid-template-columns:1fr; }
+  .qc-grid { grid-template-columns:1fr 1fr; }
+  .signoff-grid { grid-template-columns:1fr; }
+  .hse-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">
+      <img src="QQL_2024.jpg" alt="Q2 Machines Logo">
+    </div>
+    <div class="brand-text">
+      <div class="name">Q2 Machines</div>
+      <div class="address">Warren Road, Bejucal, Cunupia, Trinidad<br>(868) 230-9702 &nbsp;·&nbsp; www.q2m.io &nbsp;·&nbsp; q2hub@q2m.io</div>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="title">Job Card</div>
+  </div>
+  <div class="topbar-right">
+    <div class="job-no-label">Job No.</div>
+    <div class="job-no-value" id="job-id-display">JC-0001</div>
+    <div class="last-saved" id="last-saved-display">Not yet saved</div>
+  </div>
+</div>
+
+<!-- LOCK BANNER -->
+<div class="lock-banner" id="lock-banner">
+  <span class="lock-banner-text">&#128274; This job is locked (Invoiced / Closed). View only. </span>
+  <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="promptAdminUnlock()">Admin Unlock</button>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offline-banner">
+  <span>&#9888; You are offline. Changes will sync when connection is restored.</span>
+  <span class="sync-badge" id="sync-count" style="display:none">0 pending</span>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-section">
+    <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="newJobCard()">+ New Job</button>
+  </div>
+  <div class="toolbar-divider"></div>
+  <div class="search-wrap">
+    <select class="search-select" id="search-type">
+      <option value="jobno">Job No.</option>
+      <option value="customer">Customer</option>
+    </select>
+    <input class="search-input" id="search-input" placeholder="Search and load existing job card..." oninput="searchJobs()" onblur="hideSearchAfterDelay()">
+    <div id="search-results-box" class="search-results" style="display:none;"></div>
+  </div>
+  <div class="toolbar-divider"></div>
+  <button class="btn btn-save" onclick="submitToSheets()">&#9729; Save to Sheets</button>
+  <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="window.print()">&#128438; Print</button>
+</div>
+
+<!-- STATUS + CATEGORY BAR -->
+<div class="statusbar">
+  <span class="status-label">Category:</span>
+  <div class="job-category-wrap">
+    <button class="cat-btn active" id="cat-customer" onclick="setCategory('customer',this)">Customer</button>
+    <button class="cat-btn" id="cat-internal" onclick="setCategory('internal',this)">Internal</button>
+  </div>
+  <div class="toolbar-divider" style="height:24px;"></div>
+  <span class="status-label">Status:</span>
+  <div class="status-options" id="status-btns">
+    <button class="status-btn active" data-color="" onclick="setStatus(this)">Received</button>
+    <button class="status-btn" data-color="blue" onclick="setStatus(this)">In Progress</button>
+    <button class="status-btn" data-color="" onclick="setStatus(this)">On Hold</button>
+    <button class="status-btn" data-color="green" onclick="setStatus(this)">Completed</button>
+    <button class="status-btn" data-color="dark" onclick="setStatus(this)">Invoiced</button>
+    <button class="status-btn" data-color="dark" onclick="setStatus(this)">Closed</button>
+  </div>
+  <div class="priority-wrap">
+    <span class="status-label">Priority:</span>
+    <select class="priority-select" id="priority-select">
+      <option>Normal</option><option>Urgent</option><option>Rush</option><option>Scheduled</option>
+    </select>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- 1. CUSTOMER & JOB INFO -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#128100;</span><span class="card-header-title">Customer &amp; Job Information</span></div>
+    <div class="card-body">
+      <div class="form-grid grid-4">
+        <div class="field span-2"><label class="field-label">Customer Name / Company</label><input type="text" id="f-customer" placeholder="e.g. ABC Engineering Ltd."></div>
+        <div class="field"><label class="field-label">Contact Person</label><input type="text" id="f-contact" placeholder="Full name"></div>
+        <div class="field"><label class="field-label">Phone / WhatsApp</label><input type="tel" id="f-phone" placeholder="+1 (868) 000-0000"></div>
+        <div class="field span-2"><label class="field-label">Email</label><input type="email" id="f-email" placeholder="customer@example.com"></div>
+        <div class="field"><label class="field-label">Date Received</label><input type="date" id="f-date-received"></div>
+        <div class="field"><label class="field-label">Due Date</label><input type="date" id="f-due-date"></div>
+        <div class="field span-4"><label class="field-label">Job Description / Scope of Work</label><textarea id="f-description" rows="3" placeholder="Describe the work to be carried out..."></textarea></div>
+        <div class="field span-2"><label class="field-label">Part / Component Name</label><input type="text" id="f-part-name" placeholder="e.g. Pump Shaft, Bracket"></div>
+        <div class="field"><label class="field-label">Job Type</label>
+          <select id="f-job-type" onchange="onJobTypeChange()">
+            <option value="">Select...</option>
+            <option>Machining</option><option>Fabrication / Welding</option><option>Repair / Overhaul</option>
+            <option>Modification</option><option>Assembly</option><option>Inspection / Testing</option>
+            <option>Internal — Maintenance</option><option>Internal — Manufacturing</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label class="field-label">Customer PO / Reference</label><input type="text" id="f-cust-po" placeholder="PO number"></div>
+        <div class="field span-2"><label class="field-label">Quoted Amount (TTD)</label><input type="number" id="f-quoted" placeholder="0.00" step="0.01" oninput="syncQuoted(this)"></div>
+        <div class="field"><label class="field-label">Accepted By (Shop)</label><input type="text" id="f-accepted-by" placeholder="Staff member"></div>
+        <div class="field"><label class="field-label">Modified By</label><input type="text" id="f-modified-by" placeholder="Your name"></div>
+      </div>
+
+      <!-- DRAWING CONTROL -->
+      <div class="section-divider" style="margin-top:16px;">Drawing Control Register</div>
+      <table class="register-table" id="drawings-table">
+        <thead><tr>
+          <th style="width:120px">Drawing No.</th><th>Drawing Title</th>
+          <th style="width:90px">Revision No.</th><th style="width:120px">Date</th>
+          <th style="width:120px">Source</th><th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="drawings-body"></tbody>
+      </table>
+      <button class="btn-add-row" onclick="addDrawingRow()">+ Add Drawing</button>
+
+      <!-- SPECIFICATIONS -->
+      <div class="section-divider" style="margin-top:16px;">Specifications Register</div>
+      <table class="register-table" id="specs-table">
+        <thead><tr>
+          <th style="width:120px">Spec No. / Ref</th><th>Spec Title / Description</th>
+          <th style="width:90px">Revision No.</th><th style="width:120px">Date Received</th>
+          <th style="width:100px">Source</th><th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="specs-body"></tbody>
+      </table>
+      <button class="btn-add-row" onclick="addSpecRow()">+ Add Specification</button>
+    </div>
+  </div>
+
+  <!-- 2. H&S / JSA -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#9888;</span><span class="card-header-title">Health &amp; Safety — JSA Reference</span></div>
+    <div class="card-body">
+      <div class="form-grid hse-grid">
+        <div class="field"><label class="field-label">JSA Reference No.</label><input type="text" id="f-jsa-ref" placeholder="Auto-generated on save" readonly style="background:var(--surface-3);color:var(--ink-light);"></div>
+        <div class="field span-2"><label class="field-label">JSA Title / Description</label><input type="text" id="f-jsa-title" placeholder="e.g. Motor Repair — Hot Work JSA"></div>
+        <div class="field"><label class="field-label">Date Issued</label><input type="date" id="f-jsa-date"></div>
+        <div class="field"><label class="field-label">Issued By</label><input type="text" id="f-jsa-by" placeholder="Name of issuer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LABOUR -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#128336;</span><span class="card-header-title">Labour &amp; Time Tracking</span><span class="card-header-badge" id="labour-hrs-badge">0.00 hrs</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table" id="labour-table">
+          <thead><tr>
+            <th style="width:120px">Date</th>
+            <th style="width:160px">Classification</th>
+            <th style="width:130px">Technician</th>
+            <th style="width:120px">Location</th>
+            <th style="width:90px" class="right">Start</th>
+            <th style="width:90px" class="right">End</th>
+            <th style="width:60px" class="right">Hrs</th>
+            <th style="width:70px">Type</th>
+            <th style="width:100px" class="right">Rate (TTD)</th>
+            <th style="width:100px" class="right">Amount</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="labour-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Labour:</td>
+            <td id="labour-hrs-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;">0.00</td>
+            <td></td><td></td>
+            <td id="labour-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addLabourRow()">+ Add Labour Entry</button>
+    </div>
+  </div>
+
+  <!-- 4. EQUIPMENT -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#128297;</span><span class="card-header-title">Equipment &amp; Machines Used</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table" id="equip-table">
+          <thead><tr>
+            <th style="width:120px">Date</th>
+            <th style="width:180px">Machine / Equipment</th>
+            <th style="width:100px">Asset No.</th>
+            <th style="width:120px">Location</th>
+            <th style="width:90px" class="right">Setup (hrs)</th>
+            <th style="width:90px" class="right">Run Time (hrs)</th>
+            <th style="width:110px" class="right">Rate/hr (TTD)</th>
+            <th style="width:100px" class="right">Amount</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="equip-body"></tbody>
+          <tfoot><tr>
+            <td colspan="7" class="right">Total Machine Cost:</td>
+            <td id="equip-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addEquipRow()">+ Add Machine / Equipment</button>
+    </div>
+  </div>
+
+  <!-- 5. MATERIALS -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#128230;</span><span class="card-header-title">Materials &amp; Stock Used</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Material / Description</th>
+            <th style="width:110px">Stock Code</th><th style="width:60px">Qty</th>
+            <th style="width:75px">Unit</th><th style="width:110px" class="right">Unit Cost (TTD)</th>
+            <th style="width:110px" class="right">Total Cost</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="materials-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Materials:</td>
+            <td id="materials-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addMaterialRow()">+ Add Material</button>
+    </div>
+  </div>
+
+  <!-- 6. CONSUMABLES -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#129514;</span><span class="card-header-title">Consumables Used</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Consumable / Description</th>
+            <th style="width:150px">Category</th><th style="width:60px">Qty</th>
+            <th style="width:75px">Unit</th><th style="width:110px" class="right">Unit Cost (TTD)</th>
+            <th style="width:110px" class="right">Total Cost</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="consumables-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Consumables:</td>
+            <td id="consumables-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addConsumableRow()">+ Add Consumable</button>
+    </div>
+  </div>
+
+  <!-- 7. SUB-CONTRACTORS -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#129309;</span><span class="card-header-title">Sub-contractors &amp; Outsourced Work</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Sub-contractor / Supplier</th>
+            <th>Work / Service Description</th>
+            <th style="width:130px">Invoice / Ref No.</th>
+            <th style="width:110px" class="right">Cost (TTD)</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="subs-body"></tbody>
+          <tfoot><tr>
+            <td colspan="4" class="right">Total Sub-contractor Cost:</td>
+            <td id="subs-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addSubRow()">+ Add Sub-contractor</button>
+    </div>
+  </div>
+
+  <!-- 8. COSTING SUMMARY -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#128176;</span><span class="card-header-title">Costing Summary</span></div>
+    <div class="card-body">
+      <div class="cost-summary">
+        <div class="cost-breakdown">
+          <table>
+            <tr><td>Labour</td><td id="cs-labour">$0.00</td></tr>
+            <tr><td>Machine / Equipment</td><td id="cs-equip">$0.00</td></tr>
+            <tr><td>Materials &amp; Stock</td><td id="cs-materials">$0.00</td></tr>
+            <tr><td>Consumables</td><td id="cs-consumables">$0.00</td></tr>
+            <tr><td>Sub-contractors</td><td id="cs-subs">$0.00</td></tr>
+            <tr><td>Other / Miscellaneous</td><td><input type="number" id="cs-misc" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--ink);font-family:'Share Tech Mono',monospace;font-size:12px;text-align:right;width:90px;outline:none;padding:2px 4px;" placeholder="0.00" value="0" oninput="updateCostSummary()"></td></tr>
+            <tr class="total-row"><td>Total Job Cost</td><td id="cs-total">$0.00</td></tr>
+          </table>
+        </div>
+        <div class="cost-meta">
+          <div class="form-grid grid-2">
+            <div class="field span-2"><label class="field-label">Quoted Amount (TTD)</label><input type="number" id="f-quoted-2" placeholder="0.00" step="0.01" oninput="syncQuoted(this)"></div>
+            <div class="field span-2"><label class="field-label">Payment Terms</label>
+              <select id="f-payment-terms">
+                <option>COD – Cash on Delivery</option><option>50% Deposit, Balance on Completion</option>
+                <option>Net 30 Days</option><option>Net 15 Days</option><option>Prepaid in Full</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field span-2"><label class="field-label">Internal Notes (Costing)</label><textarea id="f-costing-notes" rows="2" placeholder="Notes on pricing, discounts..."></textarea></div>
+          </div>
+          <div class="admin-locked" id="admin-cost-section">
+            <div class="admin-locked-label">
+              <span>&#128274; Commercial — Admin Only</span>
+              <button class="btn-unlock" id="cost-unlock-btn" onclick="promptAdminUnlock('cost')">Unlock</button>
+            </div>
+            <div class="admin-locked-fields" id="admin-cost-fields">
+              <div class="field"><label class="field-label">Margin / Markup (%)</label><input type="number" id="markup-pct" placeholder="0" step="1" oninput="updateCostSummary()"></div>
+              <div class="field"><label class="field-label">Selling Price (TTD)</label><input type="number" id="selling-price" placeholder="0.00" step="0.01" readonly style="color:var(--gold-dark);font-weight:600;"></div>
+              <div class="field"><label class="field-label">Gross Profit (TTD)</label><input type="number" id="gross-profit" placeholder="0.00" readonly style="color:var(--green);font-weight:600;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. QC & SIGN-OFF -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">&#9989;</span><span class="card-header-title">Quality Check &amp; Sign-Off</span></div>
+    <div class="card-body">
+      <div class="field-label" style="margin-bottom:8px;">Quality Checklist — click to toggle Pass / Fail</div>
+      <div class="qc-grid" id="qc-grid"></div>
+      <div style="margin-top:16px;">
+        <div class="form-grid grid-3">
+          <div class="field"><label class="field-label">Date Completed</label><input type="date" id="f-date-completed"></div>
+          <div class="field"><label class="field-label">Inspected By</label><input type="text" id="f-inspected-by" placeholder="Inspector name"></div>
+          <div class="field"><label class="field-label">Overall Result</label>
+            <select id="f-qc-result">
+              <option value="">Select...</option><option>Pass — Released to Customer</option>
+              <option>Conditional Pass — Minor Rework</option><option>Fail — Rework Required</option><option>Scrapped</option>
+            </select>
+          </div>
+          <div class="field span-3"><label class="field-label">QC Notes / Non-Conformances</label><textarea id="f-qc-notes" rows="2" placeholder="Note any defects, rework, deviations..."></textarea></div>
+        </div>
+      </div>
+
+      <!-- REPORTS REGISTER -->
+      <div class="section-divider" style="margin-top:16px;">Associated Reports</div>
+      <table class="register-table">
+        <thead><tr>
+          <th style="width:150px">Report Ref No.</th><th>Report Title</th><th style="width:32px"></th>
+        </tr></thead>
+        <tbody id="reports-body"></tbody>
+      </table>
+      <button class="btn-add-row" onclick="addReportRow()">+ Add Report</button>
+
+      <!-- SIGN-OFF -->
+      <div class="section-divider" style="margin-top:20px;">Authorisations</div>
+      <div style="height:10px;"></div>
+      <div class="signoff-grid">
+        <div class="signoff-box"><div class="signoff-role">Workshop Supervisor</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+        <div class="signoff-box"><div class="signoff-role">Quality Inspector / Foreman</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+        <div class="signoff-box"><div class="signoff-role">Customer Acceptance</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn btn-danger" onclick="if(confirm('Reset all fields and start a new job card?')) newJobCard()">&#8635; New / Reset</button>
+    <button class="btn btn-outline" onclick="window.print()">&#128438; Print / PDF</button>
+    <button class="btn btn-save" onclick="submitToSheets()">&#9729; Save to Sheets</button>
+  </div>
+
+</div><!-- end main-wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<!-- ADMIN UNLOCK MODAL -->
+<div class="modal-overlay" id="admin-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <h3>&#128274; Admin Unlock</h3>
+    <p>Enter the admin PIN to unlock this section.</p>
+    <input type="password" class="pin-input" id="admin-pin-input" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')verifyAdminPin()">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('admin-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" onclick="verifyAdminPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  Q2 MACHINES — Job Card App
+// ─────────────────────────────────────────────────────────────
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3PjYzQ672MZ-KTL5smm2lB0WyLBZpZhOocK7Y9b_g9eLg1RJp3JyQOU7xHtHEsYSsmQ/exec';
+const ADMIN_PIN  = '2025';   // Change this before deployment
+const CACHE_TTL  = 86400000; // 24 hours in ms
+
+// ── STATE ────────────────────────────────────────────────────
+let CONFIG = { labour:[], equipment:[], tasks:[], materials:[], consumables:[], qcChecklists:[] };
+let adminUnlocked = false;
+let adminUnlockTarget = null;
+let isLocked = false;
+let searchTimeout = null;
+let offlineQueue = JSON.parse(localStorage.getItem('q2_offline_queue') || '[]');
+
+// ── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  updateOfflineBanner();
+  await loadConfig();
+  newJobCard();
+  setInterval(syncOfflineQueue, 30000);
+});
+
+window.addEventListener('online',  () => { updateOfflineBanner(); syncOfflineQueue(); });
+window.addEventListener('offline', () => { updateOfflineBanner(); });
+
+function updateOfflineBanner() {
+  const banner = document.getElementById('offline-banner');
+  const badge  = document.getElementById('sync-count');
+  if (!navigator.onLine) {
+    banner.classList.add('show');
+    if (offlineQueue.length > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = offlineQueue.length + ' pending';
+    }
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+// ── CONFIG LOAD (cached) ─────────────────────────────────────
+async function loadConfig() {
+  const cached = localStorage.getItem('q2_config');
+  const ts     = localStorage.getItem('q2_config_ts');
+  if (cached && ts && (Date.now() - parseInt(ts)) < CACHE_TTL) {
+    CONFIG = JSON.parse(cached);
+    return;
+  }
+  if (!navigator.onLine) return;
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=getConfig');
+    const data = await resp.json();
+    if (data.labour) {
+      CONFIG = data;
+      localStorage.setItem('q2_config', JSON.stringify(CONFIG));
+      localStorage.setItem('q2_config_ts', Date.now().toString());
+    }
+  } catch(e) { console.warn('Config load failed', e); }
+}
+
+// ── JOB ID ───────────────────────────────────────────────────
+async function fetchNewJobNo() {
+  if (!navigator.onLine) return localJobNo();
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=newJobNo');
+    const d = await r.json();
+    return d.jobNo || localJobNo();
+  } catch(e) { return localJobNo(); }
+}
+
+function localJobNo() {
+  const n = parseInt(localStorage.getItem('q2_local_counter') || '0') + 1;
+  localStorage.setItem('q2_local_counter', n.toString());
+  return 'JC-' + String(n).padStart(4,'0') + '-L';
+}
+
+function getJobId() { return document.getElementById('job-id-display').textContent; }
+
+// ── STATUS ───────────────────────────────────────────────────
+function setStatus(btn) {
+  document.querySelectorAll('#status-btns .status-btn').forEach(b => b.classList.remove('active','green','red','blue','dark'));
+  btn.classList.add('active');
+  if (btn.dataset.color) btn.classList.add(btn.dataset.color);
+  const locked = ['Invoiced','Closed'].includes(btn.textContent.trim());
+  setLocked(locked);
+}
+
+function setLocked(lock) {
+  isLocked = lock;
+  document.getElementById('lock-banner').classList.toggle('show', lock);
+  if (lock && !adminUnlocked) {
+    document.body.classList.add('readonly');
+  } else {
+    document.body.classList.remove('readonly');
+  }
+}
+
+function setCategory(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (cat === 'internal') {
+    document.getElementById('f-customer').value = 'Q2 Machines';
+    document.getElementById('f-contact').value  = '';
+    document.getElementById('f-email').value    = 'q2hub@q2m.io';
+    document.getElementById('f-phone').value    = '(868) 230-9702';
+  }
+}
+
+function onJobTypeChange() {
+  const jt = document.getElementById('f-job-type').value;
+  if (jt.startsWith('Internal')) {
+    setCategory('internal', document.getElementById('cat-internal'));
+  }
+  buildQCChecklist(jt);
+}
+
+// ── ADMIN UNLOCK ─────────────────────────────────────────────
+function promptAdminUnlock(target) {
+  adminUnlockTarget = target || 'job';
+  document.getElementById('admin-pin-input').value = '';
+  document.getElementById('admin-modal').classList.add('show');
+  setTimeout(() => document.getElementById('admin-pin-input').focus(), 100);
+}
+
+function verifyAdminPin() {
+  const pin = document.getElementById('admin-pin-input').value;
+  if (pin === ADMIN_PIN) {
+    adminUnlocked = true;
+    document.getElementById('admin-modal').classList.remove('show');
+    if (adminUnlockTarget === 'cost') {
+      document.getElementById('admin-cost-fields').classList.add('unlocked');
+      document.getElementById('cost-unlock-btn').textContent = 'Unlocked';
+      document.getElementById('cost-unlock-btn').classList.add('unlocked');
+    } else {
+      setLocked(false);
+    }
+    showToast('Admin access granted — session only.', 'success');
+  } else {
+    document.getElementById('admin-pin-input').value = '';
+    showToast('Incorrect PIN.', 'error');
+  }
+}
+
+// ── QC CHECKLIST ─────────────────────────────────────────────
+function buildQCChecklist(jobType) {
+  const grid = document.getElementById('qc-grid');
+  grid.innerHTML = '';
+  const items = CONFIG.qcChecklists
+    .filter(r => !jobType || r['Job Type'] === jobType || r['Job Type'] === 'All')
+    .map(r => r['Checklist Item'])
+    .filter(Boolean);
+  if (!items.length) {
+    grid.innerHTML = '<p style="color:var(--ink-light);font-size:12px;padding:8px 0;">No checklist items configured for this job type. Add items to the QC Checklists tab in Google Sheets.</p>';
+    return;
+  }
+  items.forEach(item => {
+    const div = document.createElement('div'); div.className = 'qc-item';
+    const chk = document.createElement('div'); chk.className = 'qc-check'; chk.textContent = '';
+    chk.onclick = () => {
+      if (!chk.classList.contains('checked') && !chk.classList.contains('failed')) { chk.classList.add('checked'); chk.textContent = '✓'; }
+      else if (chk.classList.contains('checked')) { chk.classList.remove('checked'); chk.classList.add('failed'); chk.textContent = '✗'; }
+      else { chk.classList.remove('failed'); chk.textContent = ''; }
+    };
+    const txt = document.createElement('span'); txt.className = 'qc-text'; txt.textContent = item;
+    div.appendChild(chk); div.appendChild(txt);
+    grid.appendChild(div);
+  });
+}
+
+// ── LABOUR ───────────────────────────────────────────────────
+function addLabourRow(d) {
+  const tbody = document.getElementById('labour-body');
+  const rid = 'lr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const classOpts = CONFIG.labour.map(r => `<option value="${r['Classification']}">${r['Classification']}</option>`).join('');
+  const taskOpts  = CONFIG.tasks.map(r => `<option value="${r['Task Name']}">${r['Task Name']}</option>`).join('');
+
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onLabourClassChange(this,'${rid}')">${classOpts ? '<option value="">Select...</option>'+classOpts : '<option value="">No classifications loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Technician name" value="${d&&d.tech||''}"></td>
+    <td><select onchange="onLabourLocationChange(this,'${rid}')">
+      <option value="Workshop">Workshop</option>
+      <option value="Onsite">Onsite</option>
+      <option value="Other">Other</option>
+    </select></td>
+    <td><input type="time" class="num" value="${d&&d.start||''}" onchange="calcLabourHours('${rid}')"></td>
+    <td><input type="time" class="num" value="${d&&d.end||''}" onchange="calcLabourHours('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.hrs||''}" step="0.25" oninput="updateLabourRow('${rid}')" style="width:56px;"></td>
+    <td><span class="ot-badge" id="${rid}-type" style="display:none;">OT</span><span id="${rid}-typelabel">Reg</span></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-rate" value="${d&&d.rate||''}" oninput="updateLabourRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="removeLabourRow('${rid}')">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+
+  // Other location text field
+  const locSel = tr.querySelectorAll('select')[1];
+  if (d && d.location) locSel.value = d.location;
+
+  // Task sub-row container
+  const taskTr = document.createElement('tr');
+  taskTr.className = 'task-subrows';
+  taskTr.id = rid + '-tasks';
+  taskTr.innerHTML = `<td colspan="11"><div id="${rid}-taskcontainer"></div><button class="btn-add-task" onclick="addTaskSubRow('${rid}-taskcontainer','${taskOpts}')">+ Add Task</button></td>`;
+  tbody.appendChild(taskTr);
+
+  if (d && d.classification) {
+    tr.querySelectorAll('select')[0].value = d.classification;
+    onLabourClassChange(tr.querySelectorAll('select')[0], rid);
+  }
+  if (d && d.tasks) d.tasks.forEach(t => addTaskSubRow(rid+'-taskcontainer', taskOpts, t));
+  updateLabourRow(rid);
+  updateLabourTotals();
+}
+
+function addTaskSubRow(containerId, taskOpts, d) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  const div = document.createElement('div');
+  div.className = 'task-subrow-inner';
+  div.innerHTML = `<span class="task-subrow-label">Task:</span>
+    <select class="task-subrow" style="min-width:160px;">${taskOpts ? '<option value="">Select task...</option>'+taskOpts : '<option>No tasks loaded</option>'}</select>
+    <span class="task-subrow-label" style="margin-left:8px;">Note:</span>
+    <input type="text" class="task-subrow" placeholder="Optional note" style="flex:1;">
+    <button class="btn-del" onclick="this.parentElement.remove()" style="font-size:12px;">&#10005;</button>`;
+  if (d) { div.querySelectorAll('select')[0].value = d.task||''; div.querySelectorAll('input')[0].value = d.note||''; }
+  c.appendChild(div);
+}
+
+function onLabourClassChange(sel, rid) {
+  const cls = sel.value;
+  const locSel = document.getElementById(rid).querySelectorAll('select')[1];
+  const loc = locSel.value;
+  const rateInput = document.getElementById(rid + '-rate');
+  const row = CONFIG.labour.find(r => r['Classification'] === cls);
+  if (row) {
+    const rate = loc === 'Workshop'
+      ? (row['Workshop Rate (TTD/hr)'] || row['Workshop Rate TTD'] || 0)
+      : (row['Onsite Rate (TTD/hr)'] || row['Onsite Rate TTD'] || 0);
+    rateInput.value = parseFloat(rate).toFixed(2);
+  }
+  updateLabourRow(rid);
+}
+
+function onLabourLocationChange(sel, rid) {
+  const clsSel = document.getElementById(rid).querySelectorAll('select')[0];
+  onLabourClassChange(clsSel, rid);
+}
+
+function calcLabourHours(rid) {
+  const tr = document.getElementById(rid);
+  const inputs = tr.querySelectorAll('input[type="time"]');
+  const start = inputs[0].value, end = inputs[1].value;
+  if (!start || !end) return;
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  let hrs = (eh * 60 + em - sh * 60 - sm) / 60;
+  if (hrs < 0) hrs += 24;
+  tr.querySelectorAll('input[type="number"]')[0].value = hrs.toFixed(2);
+  updateLabourRow(rid);
+}
+
+function updateLabourRow(rid) {
+  const tr = document.getElementById(rid);
+  if (!tr) return;
+  const hrs  = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value) || 0;
+  const rate = parseFloat(document.getElementById(rid+'-rate').value) || 0;
+  const OT_THRESHOLD = 8;
+  const isOT = hrs > OT_THRESHOLD;
+  const badge = document.getElementById(rid+'-type');
+  const label = document.getElementById(rid+'-typelabel');
+  let amount = 0;
+  if (isOT) {
+    const regAmt = OT_THRESHOLD * rate;
+    const otAmt  = (hrs - OT_THRESHOLD) * rate * 1.5;
+    amount = regAmt + otAmt;
+    badge.style.display = 'inline';
+    label.textContent = 'OT';
+    tr.classList.add('ot-row');
+  } else {
+    amount = hrs * rate;
+    badge.style.display = 'none';
+    label.textContent = 'Reg';
+    tr.classList.remove('ot-row');
+  }
+  document.getElementById(rid+'-amount').textContent = '$' + amount.toFixed(2);
+  updateLabourTotals();
+  updateCostSummary();
+}
+
+function removeLabourRow(rid) {
+  const tr  = document.getElementById(rid);
+  const ttr = document.getElementById(rid+'-tasks');
+  if (tr)  tr.remove();
+  if (ttr) ttr.remove();
+  updateLabourTotals();
+  updateCostSummary();
+}
+
+function updateLabourTotals() {
+  let totalHrs = 0, totalCost = 0;
+  document.querySelectorAll('#labour-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id;
+    if (!rid || !rid.startsWith('lr-')) return;
+    const hrs = parseFloat(tr.querySelectorAll('input[type="number"]')[0]?.value) || 0;
+    const amt = parseFloat(document.getElementById(rid+'-amount')?.textContent.replace('$','')) || 0;
+    totalHrs  += hrs;
+    totalCost += amt;
+  });
+  document.getElementById('labour-hrs-total').textContent = totalHrs.toFixed(2);
+  document.getElementById('labour-cost-total').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('labour-hrs-badge').textContent  = totalHrs.toFixed(2) + ' hrs';
+}
+
+// ── EQUIPMENT ────────────────────────────────────────────────
+function addEquipRow(d) {
+  const tbody = document.getElementById('equip-body');
+  const rid = 'er-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const equipOpts = CONFIG.equipment.map(r => `<option value="${r['Equipment Name']}">${r['Equipment Name']}</option>`).join('');
+  const taskOpts  = CONFIG.tasks.map(r => `<option value="${r['Task Name']}">${r['Task Name']}</option>`).join('');
+
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onEquipChange(this,'${rid}')">${equipOpts ? '<option value="">Select...</option>'+equipOpts : '<option value="">No equipment loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Asset No." value="${d&&d.asset||''}"></td>
+    <td><select onchange="onEquipChange(document.getElementById('${rid}').querySelectorAll('select')[0],'${rid}')">
+      <option value="Workshop">Workshop</option><option value="Onsite">Onsite</option><option value="Other">Other</option>
+    </select></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.setup||''}" step="0.25" oninput="updateEquipRow('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.run||''}" step="0.25" oninput="updateEquipRow('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-rate" value="${d&&d.rate||''}" oninput="updateEquipRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="removeEquipRow('${rid}')">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+
+  const taskTr = document.createElement('tr');
+  taskTr.className = 'task-subrows';
+  taskTr.id = rid + '-tasks';
+  taskTr.innerHTML = `<td colspan="9"><div id="${rid}-taskcontainer"></div><button class="btn-add-task" onclick="addTaskSubRow('${rid}-taskcontainer','${taskOpts}')">+ Add Task</button></td>`;
+  tbody.appendChild(taskTr);
+
+  if (d && d.machine) { tr.querySelectorAll('select')[0].value = d.machine; onEquipChange(tr.querySelectorAll('select')[0], rid); }
+  if (d && d.location) tr.querySelectorAll('select')[1].value = d.location;
+  if (d && d.tasks) d.tasks.forEach(t => addTaskSubRow(rid+'-taskcontainer', taskOpts, t));
+  updateEquipRow(rid);
+}
+
+function onEquipChange(sel, rid) {
+  const name = sel.value;
+  const tr = document.getElementById(rid);
+  const loc = tr.querySelectorAll('select')[1].value;
+  const row = CONFIG.equipment.find(r => r['Equipment Name'] === name);
+  if (row) {
+    const rate = loc === 'Workshop'
+      ? (row['Workshop Rate (TTD/hr)'] || row['Workshop Rate TTD'] || 0)
+      : (row['Onsite Rate (TTD/hr)'] || row['Onsite Rate TTD'] || 0);
+    document.getElementById(rid+'-rate').value = parseFloat(rate).toFixed(2);
+  }
+  updateEquipRow(rid);
+}
+
+function updateEquipRow(rid) {
+  const tr = document.getElementById(rid);
+  if (!tr) return;
+  const nums = tr.querySelectorAll('input[type="number"]');
+  const setup = parseFloat(nums[0].value) || 0;
+  const run   = parseFloat(nums[1].value) || 0;
+  const rate  = parseFloat(document.getElementById(rid+'-rate').value) || 0;
+  const amt   = (setup + run) * rate;
+  document.getElementById(rid+'-amount').textContent = '$' + amt.toFixed(2);
+  updateEquipTotals();
+  updateCostSummary();
+}
+
+function removeEquipRow(rid) {
+  const tr  = document.getElementById(rid);
+  const ttr = document.getElementById(rid+'-tasks');
+  if (tr)  tr.remove();
+  if (ttr) ttr.remove();
+  updateEquipTotals();
+  updateCostSummary();
+}
+
+function updateEquipTotals() {
+  let total = 0;
+  document.querySelectorAll('#equip-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id;
+    if (!rid || !rid.startsWith('er-')) return;
+    total += parseFloat(document.getElementById(rid+'-amount')?.textContent.replace('$','')) || 0;
+  });
+  document.getElementById('equip-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── MATERIALS ────────────────────────────────────────────────
+function addMaterialRow(d) {
+  const tbody = document.getElementById('materials-body');
+  const rid = 'mr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const matOpts = CONFIG.materials.map(r => `<option value="${r['Item Name']}" data-unit="${r['Unit']||''}" data-cost="${r['Default Unit Cost (TTD)']||r['Default Unit Cost TTD']||0}">${r['Item Name']}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onMaterialChange(this,'${rid}')">${matOpts ? '<option value="">Select or type...</option>'+matOpts : '<option value="">No materials loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Stock code" value="${d&&d.code||''}"></td>
+    <td><input type="number" class="num" placeholder="0" value="${d&&d.qty||''}" step="1" oninput="updateMaterialRow('${rid}')"></td>
+    <td><input type="text" placeholder="Unit" id="${rid}-unit" value="${d&&d.unit||''}" style="width:60px;"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.unitCost||''}" oninput="updateMaterialRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateMatTotals();updateCostSummary();">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+  if (d && d.desc) tr.querySelectorAll('select')[0].value = d.desc;
+  updateMaterialRow(rid);
+}
+
+function onMaterialChange(sel, rid) {
+  const opt = sel.options[sel.selectedIndex];
+  if (opt) {
+    document.getElementById(rid+'-unit').value = opt.dataset.unit || '';
+    document.getElementById(rid+'-cost').value = parseFloat(opt.dataset.cost||0).toFixed(2);
+  }
+  updateMaterialRow(rid);
+}
+
+function updateMaterialRow(rid) {
+  const tr = document.getElementById(rid);
+  if (!tr) return;
+  const qty  = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value) || 0;
+  const cost = parseFloat(document.getElementById(rid+'-cost').value) || 0;
+  document.getElementById(rid+'-amount').textContent = '$' + (qty*cost).toFixed(2);
+  updateMatTotals(); updateCostSummary();
+}
+
+function updateMatTotals() {
+  let total = 0;
+  document.querySelectorAll('#materials-body tr').forEach(tr => {
+    const rid = tr.id;
+    if (!rid) return;
+    total += parseFloat(document.getElementById(rid+'-amount')?.textContent.replace('$','')) || 0;
+  });
+  document.getElementById('materials-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── CONSUMABLES ──────────────────────────────────────────────
+function addConsumableRow(d) {
+  const tbody = document.getElementById('consumables-body');
+  const rid = 'cr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const conOpts = CONFIG.consumables.map(r => `<option value="${r['Item Name']}" data-unit="${r['Unit']||''}" data-cost="${r['Default Unit Cost (TTD)']||r['Default Unit Cost TTD']||0}">${r['Item Name']}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onConsumableChange(this,'${rid}')">${conOpts ? '<option value="">Select...</option>'+conOpts : '<option value="">No consumables loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Category" value="${d&&d.cat||''}"></td>
+    <td><input type="number" class="num" placeholder="0" value="${d&&d.qty||''}" step="1" oninput="updateConsumableRow('${rid}')"></td>
+    <td><input type="text" placeholder="Unit" id="${rid}-unit" value="${d&&d.unit||''}" style="width:60px;"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.unitCost||''}" oninput="updateConsumableRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateConTotals();updateCostSummary();">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+  if (d && d.desc) tr.querySelectorAll('select')[0].value = d.desc;
+  updateConsumableRow(rid);
+}
+
+function onConsumableChange(sel, rid) {
+  const opt = sel.options[sel.selectedIndex];
+  if (opt) {
+    document.getElementById(rid+'-unit').value = opt.dataset.unit || '';
+    document.getElementById(rid+'-cost').value = parseFloat(opt.dataset.cost||0).toFixed(2);
+  }
+  updateConsumableRow(rid);
+}
+
+function updateConsumableRow(rid) {
+  const tr = document.getElementById(rid);
+  if (!tr) return;
+  const qty  = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value) || 0;
+  const cost = parseFloat(document.getElementById(rid+'-cost').value) || 0;
+  document.getElementById(rid+'-amount').textContent = '$' + (qty*cost).toFixed(2);
+  updateConTotals(); updateCostSummary();
+}
+
+function updateConTotals() {
+  let total = 0;
+  document.querySelectorAll('#consumables-body tr').forEach(tr => {
+    if (!tr.id) return;
+    total += parseFloat(document.getElementById(tr.id+'-amount')?.textContent.replace('$','')) || 0;
+  });
+  document.getElementById('consumables-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── SUB-CONTRACTORS ──────────────────────────────────────────
+function addSubRow(d) {
+  const tbody = document.getElementById('subs-body');
+  const rid = 'sr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><input type="text" placeholder="Sub-contractor / Supplier" value="${d&&d.name||''}"></td>
+    <td><input type="text" placeholder="Work / service description" value="${d&&d.service||''}"></td>
+    <td><input type="text" placeholder="Invoice / Ref No." value="${d&&d.inv||''}"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.cost||''}" oninput="updateSubTotals()"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateSubTotals();updateCostSummary();">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+  updateSubTotals();
+}
+
+function updateSubTotals() {
+  let total = 0;
+  document.querySelectorAll('#subs-body tr').forEach(tr => {
+    if (!tr.id) return;
+    total += parseFloat(document.getElementById(tr.id+'-cost')?.value) || 0;
+  });
+  document.getElementById('subs-cost-total').textContent = '$' + total.toFixed(2);
+  updateCostSummary();
+}
+
+// ── DRAWINGS ─────────────────────────────────────────────────
+function addDrawingRow(d) {
+  const tbody = document.getElementById('drawings-body');
+  const rid = 'dr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="DWG-001" value="${d&&d['Drawing No']||''}"></td>
+    <td><input type="text" placeholder="Drawing title" value="${d&&d['Drawing Title']||''}"></td>
+    <td><input type="text" placeholder="Rev A" value="${d&&d['Revision No']||''}"></td>
+    <td><input type="date" value="${d&&d['Date']||''}"></td>
+    <td><select><option value="Client">Client</option><option value="Internal">Internal</option></select></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">&#10005;</button></td>`;
+  if (d && d['Source']) tr.querySelectorAll('select')[0].value = d['Source'];
+  tbody.appendChild(tr);
+}
+
+// ── SPECIFICATIONS ───────────────────────────────────────────
+function addSpecRow(d) {
+  const tbody = document.getElementById('specs-body');
+  const rid = 'sp-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="SPEC-001" value="${d&&d['Spec No']||''}"></td>
+    <td><input type="text" placeholder="Spec title / description" value="${d&&d['Spec Title']||''}"></td>
+    <td><input type="text" placeholder="Rev 1" value="${d&&d['Revision No']||''}"></td>
+    <td><input type="date" value="${d&&d['Date Received']||''}"></td>
+    <td><input type="text" placeholder="Client" value="${d&&d['Source']||'Client'}" style="width:80px;"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+}
+
+// ── REPORTS ──────────────────────────────────────────────────
+function addReportRow(d) {
+  const tbody = document.getElementById('reports-body');
+  const rid = 'rr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr');
+  tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="RPT-0001" value="${d&&d.ref||''}"></td>
+    <td><input type="text" placeholder="Report title" value="${d&&d.title||''}"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">&#10005;</button></td>`;
+  tbody.appendChild(tr);
+}
+
+// ── COSTING SUMMARY ──────────────────────────────────────────
+function syncQuoted(src) {
+  const v = src.value;
+  const other = src.id === 'f-quoted' ? 'f-quoted-2' : 'f-quoted';
+  document.getElementById(other).value = v;
+  updateCostSummary();
+}
+
+function updateCostSummary() {
+  const labour      = parseFloat(document.getElementById('labour-cost-total').textContent.replace('$','')) || 0;
+  const equip       = parseFloat(document.getElementById('equip-cost-total').textContent.replace('$','')) || 0;
+  const materials   = parseFloat(document.getElementById('materials-cost-total').textContent.replace('$','')) || 0;
+  const consumables = parseFloat(document.getElementById('consumables-cost-total').textContent.replace('$','')) || 0;
+  const subs        = parseFloat(document.getElementById('subs-cost-total').textContent.replace('$','')) || 0;
+  const misc        = parseFloat(document.getElementById('cs-misc').value) || 0;
+  const total = labour + equip + materials + consumables + subs + misc;
+
+  document.getElementById('cs-labour').textContent     = '$' + labour.toFixed(2);
+  document.getElementById('cs-equip').textContent      = '$' + equip.toFixed(2);
+  document.getElementById('cs-materials').textContent  = '$' + materials.toFixed(2);
+  document.getElementById('cs-consumables').textContent= '$' + consumables.toFixed(2);
+  document.getElementById('cs-subs').textContent       = '$' + subs.toFixed(2);
+  document.getElementById('cs-total').textContent      = '$' + total.toFixed(2);
+
+  const markup   = parseFloat(document.getElementById('markup-pct').value) || 0;
+  const selling  = total * (1 + markup / 100);
+  const profit   = selling - total;
+  document.getElementById('selling-price').value = selling.toFixed(2);
+  document.getElementById('gross-profit').value  = profit.toFixed(2);
+}
+
+// ── COLLECT FORM DATA ────────────────────────────────────────
+function collectFormData() {
+  const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const getStatus = () => { const b = document.querySelector('#status-btns .status-btn.active'); return b ? b.textContent.trim() : 'Received'; };
+  const getCat    = () => document.getElementById('cat-internal').classList.contains('active') ? 'Internal' : 'Customer';
+
+  // Labour
+  const labourDetail = [];
+  document.querySelectorAll('#labour-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id;
+    if (!rid || !rid.startsWith('lr-')) return;
+    const inputs  = tr.querySelectorAll('input');
+    const selects = tr.querySelectorAll('select');
+    const tasks = [];
+    const tc = document.getElementById(rid+'-taskcontainer');
+    if (tc) tc.querySelectorAll('.task-subrow-inner').forEach(div => {
+      tasks.push({ task: div.querySelector('select')?.value||'', note: div.querySelector('input')?.value||'' });
+    });
+    labourDetail.push({
+      date: inputs[0].value, classification: selects[0].value, tech: inputs[1].value,
+      location: selects[1].value, start: inputs[2].value, end: inputs[3].value,
+      hrs: inputs[4].value, rate: document.getElementById(rid+'-rate').value,
+      amount: document.getElementById(rid+'-amount').textContent.replace('$',''), tasks
+    });
+  });
+
+  // Equipment
+  const equipDetail = [];
+  document.querySelectorAll('#equip-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id;
+    if (!rid || !rid.startsWith('er-')) return;
+    const inputs  = tr.querySelectorAll('input');
+    const selects = tr.querySelectorAll('select');
+    const tasks = [];
+    const tc = document.getElementById(rid+'-taskcontainer');
+    if (tc) tc.querySelectorAll('.task-subrow-inner').forEach(div => {
+      tasks.push({ task: div.querySelector('select')?.value||'', note: div.querySelector('input')?.value||'' });
+    });
+    equipDetail.push({
+      date: inputs[0].value, machine: selects[0].value, asset: inputs[1].value,
+      location: selects[1].value, setup: inputs[2].value, run: inputs[3].value,
+      rate: document.getElementById(rid+'-rate').value,
+      amount: document.getElementById(rid+'-amount').textContent.replace('$',''), tasks
+    });
+  });
+
+  // Materials
+  const materialsDetail = [];
+  document.querySelectorAll('#materials-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    materialsDetail.push({
+      date: inputs[0].value,
+      desc: tr.querySelector('select')?.value||'',
+      code: inputs[1].value, qty: inputs[2].value,
+      unit: document.getElementById(tr.id+'-unit').value,
+      unitCost: document.getElementById(tr.id+'-cost').value
+    });
+  });
+
+  // Consumables
+  const consumablesDetail = [];
+  document.querySelectorAll('#consumables-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    consumablesDetail.push({
+      date: inputs[0].value,
+      desc: tr.querySelector('select')?.value||'',
+      cat: inputs[1].value, qty: inputs[2].value,
+      unit: document.getElementById(tr.id+'-unit').value,
+      unitCost: document.getElementById(tr.id+'-cost').value
+    });
+  });
+
+  // Subs
+  const subsDetail = [];
+  document.querySelectorAll('#subs-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    subsDetail.push({ date: inputs[0].value, name: inputs[1].value, service: inputs[2].value, inv: inputs[3].value, cost: document.getElementById(tr.id+'-cost').value });
+  });
+
+  // Drawings
+  const drawingsDetail = [];
+  document.querySelectorAll('#drawings-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    drawingsDetail.push({ 'Drawing No': inputs[0].value, 'Drawing Title': inputs[1].value, 'Revision No': inputs[2].value, 'Date': inputs[3].value, 'Source': tr.querySelector('select')?.value||'Client' });
+  });
+
+  // Specs
+  const specsDetail = [];
+  document.querySelectorAll('#specs-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    specsDetail.push({ 'Spec No': inputs[0].value, 'Spec Title': inputs[1].value, 'Revision No': inputs[2].value, 'Date Received': inputs[3].value, 'Source': inputs[4].value });
+  });
+
+  // Reports
+  const reportsDetail = [];
+  document.querySelectorAll('#reports-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    reportsDetail.push({ ref: inputs[0].value, title: inputs[1].value });
+  });
+
+  // QC
+  const qcState = [];
+  document.querySelectorAll('#qc-grid .qc-item').forEach(item => {
+    const chk = item.querySelector('.qc-check');
+    const txt = item.querySelector('.qc-text');
+    if (chk && txt) qcState.push({ item: txt.textContent, state: chk.classList.contains('checked') ? 'pass' : chk.classList.contains('failed') ? 'fail' : '' });
+  });
+
+  return {
+    'Job No':          get('job-id-display') || document.getElementById('job-id-display').textContent,
+    'Job Category':    getCat(),
+    'Job Type':        get('f-job-type'),
+    'Status':          getStatus(),
+    'Priority':        get('priority-select'),
+    'Customer':        get('f-customer'),
+    'Contact':         get('f-contact'),
+    'Phone':           get('f-phone'),
+    'Email':           get('f-email'),
+    'Date Received':   get('f-date-received'),
+    'Due Date':        get('f-due-date'),
+    'Description':     get('f-description'),
+    'Part Name':       get('f-part-name'),
+    'Drawing No':      '',
+    'Customer PO':     get('f-cust-po'),
+    'Quoted TTD':      get('f-quoted'),
+    'Accepted By':     get('f-accepted-by'),
+    'Payment Terms':   get('f-payment-terms'),
+    'Labour Detail':   JSON.stringify(labourDetail),
+    'Equipment Detail':JSON.stringify(equipDetail),
+    'Materials Detail':JSON.stringify(materialsDetail),
+    'Consumables Detail': JSON.stringify(consumablesDetail),
+    'Subs Detail':     JSON.stringify(subsDetail),
+    'Drawings Detail': JSON.stringify(drawingsDetail),
+    'Specs Detail':    JSON.stringify(specsDetail),
+    'JSA Ref':         get('f-jsa-ref'),
+    'JSA Title':       get('f-jsa-title'),
+    'JSA Date Issued': get('f-jsa-date'),
+    'JSA Issued By':   get('f-jsa-by'),
+    'Misc TTD':        get('cs-misc'),
+    'Quoted TTD 2':    get('f-quoted-2'),
+    'Costing Notes':   get('f-costing-notes'),
+    'Date Completed':  get('f-date-completed'),
+    'Inspected By':    get('f-inspected-by'),
+    'QC Result':       get('f-qc-result'),
+    'QC Notes':        get('f-qc-notes'),
+    'QC State':        JSON.stringify(qcState),
+    'Reports Detail':  JSON.stringify(reportsDetail),
+    'Modified By':     get('f-modified-by') || 'Unknown',
+  };
+}
+
+// ── SAVE TO SHEETS ───────────────────────────────────────────
+async function submitToSheets() {
+  if (isLocked && !adminUnlocked) {
+    showToast('This job is locked. Use Admin Unlock to make changes.', 'error');
+    return;
+  }
+  const data = collectFormData();
+  showToast('Saving to Google Sheets...', 'loading');
+
+  if (!navigator.onLine) {
+    offlineQueue.push({ data, ts: Date.now() });
+    localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+    updateOfflineBanner();
+    showToast('Saved offline. Will sync when connection restores.', 'warn');
+    return;
+  }
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveJob', data })
+    });
+    const result = await resp.json();
+    if (result.status === 'ok') {
+      const now = new Date().toLocaleString('en-TT');
+      document.getElementById('last-saved-display').textContent = 'Saved ' + now;
+      if (result.jobNo) document.getElementById('job-id-display').textContent = result.jobNo;
+      showToast('✓ Job saved to Google Sheets.', 'success');
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+  } catch(e) {
+    offlineQueue.push({ data, ts: Date.now() });
+    localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+    showToast('Save failed — queued for retry. ' + e.message, 'warn');
+    updateOfflineBanner();
+  }
+}
+
+async function syncOfflineQueue() {
+  if (!navigator.onLine || offlineQueue.length === 0) return;
+  const queue = [...offlineQueue];
+  offlineQueue = [];
+  localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+  for (const item of queue) {
+    try {
+      const resp = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveJob', data: item.data })
+      });
+      const result = await resp.json();
+      if (result.status !== 'ok') throw new Error(result.error);
+    } catch(e) {
+      offlineQueue.push(item);
+    }
+  }
+  localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+  updateOfflineBanner();
+  if (queue.length > offlineQueue.length) showToast('✓ Offline jobs synced to Sheets.', 'success');
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+function searchJobs() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(doSearch, 350);
+}
+
+async function doSearch() {
+  const q    = document.getElementById('search-input').value.trim();
+  const type = document.getElementById('search-type').value;
+  const box  = document.getElementById('search-results-box');
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  if (!navigator.onLine) { showToast('Search requires internet connection.', 'warn'); return; }
+  box.style.display = 'block';
+  box.innerHTML = '<div class="search-empty">Searching...</div>';
+  positionSearchBox();
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?action=search&q=${encodeURIComponent(q)}&type=${type}`);
+    const data = await resp.json();
+    if (!data.results || !data.results.length) { box.innerHTML = '<div class="search-empty">No matching jobs found.</div>'; return; }
+    box.innerHTML = '';
+    data.results.forEach(row => {
+      const div = document.createElement('div'); div.className = 'search-result-item';
+      div.innerHTML = `<div class="sri-jobno">${row['Job No']||''}</div>
+        <div class="sri-customer">${row['Customer']||''}</div>
+        <div class="sri-meta">${row['Job Type']||''} · ${row['Status']||''} · Due: ${row['Due Date']||'—'}</div>`;
+      div.onclick = () => { loadJobFromRow(row); box.style.display = 'none'; document.getElementById('search-input').value = ''; };
+      box.appendChild(div);
+    });
+  } catch(e) { box.innerHTML = '<div class="search-empty">Error fetching results.</div>'; }
+}
+
+function positionSearchBox() {
+  const inp = document.getElementById('search-input');
+  const box = document.getElementById('search-results-box');
+  const r   = inp.getBoundingClientRect();
+  box.style.top   = (r.bottom + 4) + 'px';
+  box.style.left  = r.left + 'px';
+  box.style.width = Math.max(r.width, 320) + 'px';
+}
+
+function hideSearchAfterDelay() { setTimeout(() => { document.getElementById('search-results-box').style.display = 'none'; }, 300); }
+
+// ── LOAD JOB ─────────────────────────────────────────────────
+function loadJobFromRow(row) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+
+  document.getElementById('job-id-display').textContent = row['Job No'] || '';
+
+  // Status
+  document.querySelectorAll('#status-btns .status-btn').forEach(btn => {
+    btn.classList.remove('active','green','red','blue','dark');
+    if (btn.textContent.trim() === row['Status']) {
+      btn.classList.add('active');
+      if (btn.dataset.color) btn.classList.add(btn.dataset.color);
+    }
+  });
+
+  // Category
+  const isCat = row['Job Category'] === 'Internal' ? 'internal' : 'customer';
+  setCategory(isCat, document.getElementById('cat-' + isCat));
+
+  const ps = document.getElementById('priority-select'); if (ps) ps.value = row['Priority'] || 'Normal';
+  set('f-customer', row['Customer']); set('f-contact', row['Contact']);
+  set('f-phone', row['Phone']); set('f-email', row['Email']);
+  set('f-date-received', row['Date Received']); set('f-due-date', row['Due Date']);
+  set('f-description', row['Description']); set('f-part-name', row['Part Name']);
+  set('f-job-type', row['Job Type']); set('f-cust-po', row['Customer PO']);
+  set('f-quoted', row['Quoted TTD']); set('f-quoted-2', row['Quoted TTD 2'] || row['Quoted TTD']);
+  set('f-accepted-by', row['Accepted By']); set('f-payment-terms', row['Payment Terms']);
+  set('f-costing-notes', row['Costing Notes']); set('cs-misc', row['Misc TTD'] || '0');
+  set('f-date-completed', row['Date Completed']); set('f-inspected-by', row['Inspected By']);
+  set('f-qc-result', row['QC Result']); set('f-qc-notes', row['QC Notes']);
+  set('f-jsa-ref', row['JSA Ref']); set('f-jsa-title', row['JSA Title']);
+  set('f-jsa-date', row['JSA Date Issued']); set('f-jsa-by', row['JSA Issued By']);
+  set('markup-pct', '0');
+
+  // Last saved
+  if (row['Last Saved']) document.getElementById('last-saved-display').textContent = 'Saved ' + new Date(row['Last Saved']).toLocaleString('en-TT');
+
+  // Clear tables
+  ['labour-body','equip-body','materials-body','consumables-body','subs-body','drawings-body','specs-body','reports-body'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  const parse = str => { try { return JSON.parse(str) || []; } catch(e) { return []; } };
+  parse(row['Labour Detail']).forEach(d => addLabourRow(d));
+  parse(row['Equipment Detail']).forEach(d => addEquipRow(d));
+  parse(row['Materials Detail']).forEach(d => addMaterialRow(d));
+  parse(row['Consumables Detail']).forEach(d => addConsumableRow(d));
+  parse(row['Subs Detail']).forEach(d => addSubRow(d));
+  parse(row['Drawings Detail']).forEach(d => addDrawingRow(d));
+  parse(row['Specs Detail']).forEach(d => addSpecRow(d));
+  parse(row['Reports Detail']).forEach(d => addReportRow(d));
+
+  onJobTypeChange();
+
+  if (row['QC State']) {
+    const qs = parse(row['QC State']);
+    document.querySelectorAll('#qc-grid .qc-item').forEach((item, i) => {
+      const chk = item.querySelector('.qc-check');
+      if (qs[i]) {
+        chk.classList.remove('checked','failed');
+        chk.textContent = '';
+        if (qs[i].state === 'pass') { chk.classList.add('checked'); chk.textContent = '✓'; }
+        else if (qs[i].state === 'fail') { chk.classList.add('failed'); chk.textContent = '✗'; }
+      }
+    });
+  }
+
+  const locked = ['Invoiced','Closed'].includes(row['Status']);
+  setLocked(locked);
+  updateCostSummary();
+  showToast('✓ Job ' + row['Job No'] + ' loaded.', 'success');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── NEW JOB ───────────────────────────────────────────────────
+async function newJobCard() {
+  document.querySelectorAll('.field input,.field select,.field textarea').forEach(el => {
+    if (el.type !== 'checkbox') el.value = '';
+  });
+  document.getElementById('cs-misc').value = '0';
+  document.getElementById('markup-pct').value = '0';
+  ['labour-body','equip-body','materials-body','consumables-body','subs-body','drawings-body','specs-body','reports-body'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+  document.querySelectorAll('#status-btns .status-btn').forEach(b => b.classList.remove('active','green','red','blue','dark'));
+  document.querySelector('#status-btns .status-btn').classList.add('active');
+  document.getElementById('f-date-received').valueAsDate = new Date();
+  document.getElementById('last-saved-display').textContent = 'Not yet saved';
+  adminUnlocked = false;
+  document.getElementById('admin-cost-fields').classList.remove('unlocked');
+  document.getElementById('cost-unlock-btn').textContent = 'Unlock';
+  document.getElementById('cost-unlock-btn').classList.remove('unlocked');
+  setLocked(false);
+  setCategory('customer', document.getElementById('cat-customer'));
+  buildQCChecklist('');
+  addLabourRow(); addEquipRow(); addMaterialRow(); addConsumableRow(); addSubRow();
+  updateCostSummary();
+
+  const jobNo = await fetchNewJobNo();
+  document.getElementById('job-id-display').textContent = jobNo;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  m.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), type === 'loading' ? 30000 : 4000);
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js').catch(e => console.warn('SW reg failed', e));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Card — Q2 Machines</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#F5C500">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── CSS VARIABLES ── */
+:root {
+  --gold: #F5C500; --gold-dark: #C49B00; --gold-light: #FFF3B0;
+  --ink: #1A1A1A; --ink-mid: #3D3D3D; --ink-light: #6B6B6B;
+  --border: #E0E0E0; --border-strong: #BDBDBD;
+  --surface: #FFFFFF; --surface-2: #F7F7F5; --surface-3: #EFEFEC;
+  --red: #D32F2F; --red-bg: #FFEBEE;
+  --green: #2E7D32; --green-bg: #E8F5E9;
+  --blue: #1565C0; --blue-bg: #E3F2FD;
+  --amber: #E65100; --amber-bg: #FFF3E0;
+  --radius: 6px; --radius-lg: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
+  --body-bg: #F4F3EF;
+}
+body.dark {
+  --gold: #F5C500; --gold-dark: #D4AA00; --gold-light: #2A2000;
+  --ink: #EEEEEE; --ink-mid: #BBBBBB; --ink-light: #888888;
+  --border: #2E2E2E; --border-strong: #444444;
+  --surface: #1C1C1C; --surface-2: #242424; --surface-3: #2C2C2C;
+  --red: #EF5350; --red-bg: #2D0F0F;
+  --green: #66BB6A; --green-bg: #0C2010;
+  --blue: #64B5F6; --blue-bg: #0C1F35;
+  --amber: #FFA726; --amber-bg: #2A1800;
+  --body-bg: #131313;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--body-bg); color:var(--ink); font-family:'Barlow',sans-serif; font-size:13px; min-height:100vh; transition:background .2s,color .2s; }
+
+/* ── TOPBAR ── */
+.topbar { background:var(--ink); border-bottom:4px solid var(--gold); padding:0 32px; display:flex; align-items:stretch; justify-content:space-between; gap:16px; min-height:72px; }
+.brand { display:flex; align-items:center; gap:14px; padding:12px 0; }
+.brand-logo { width:52px; height:52px; border-radius:var(--radius); overflow:hidden; background:var(--gold); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.brand-logo img { width:100%; height:100%; object-fit:contain; }
+.brand-text .name { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#FFFFFF; line-height:1.1; }
+.brand-text .address { font-size:10px; color:#9E9E9E; letter-spacing:.5px; margin-top:2px; line-height:1.5; }
+.topbar-center { display:flex; align-items:center; }
+.topbar-center .title { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; letter-spacing:6px; text-transform:uppercase; color:var(--gold); }
+.topbar-right { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:4px; }
+.job-no-label { font-size:9px; color:#9E9E9E; letter-spacing:1.5px; text-transform:uppercase; }
+.job-no-value { font-family:'Share Tech Mono',monospace; font-size:22px; color:var(--gold); letter-spacing:2px; }
+.last-saved { font-size:9px; color:#757575; font-family:'Share Tech Mono',monospace; }
+.topbar-controls { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.btn-topbar { background:transparent; border:1px solid #555; border-radius:4px; color:#9E9E9E; font-size:10px; padding:3px 9px; cursor:pointer; font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; transition:all .15s; }
+.btn-topbar:hover { border-color:var(--gold); color:var(--gold); }
+.draft-dot { width:7px; height:7px; border-radius:50%; background:var(--amber); display:none; animation:pulse 2s infinite; }
+.draft-dot.show { display:inline-block; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── TOOLBAR ── */
+.toolbar { background:var(--surface); border-bottom:1px solid var(--border); padding:8px 32px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.toolbar-section { display:flex; align-items:center; gap:8px; }
+.toolbar-divider { width:1px; height:28px; background:var(--border); }
+.search-wrap { display:flex; align-items:center; gap:6px; flex:1; min-width:240px; }
+.search-select { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 8px; font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; }
+.search-input { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 10px; font-family:'Barlow',sans-serif; font-size:12px; flex:1; outline:none; transition:border-color .15s; }
+.search-input:focus { border-color:var(--gold); background:#FFFDF0; }
+.search-results { position:fixed; z-index:1000; background:var(--surface); border:1px solid var(--gold); border-radius:var(--radius); box-shadow:var(--shadow-md); min-width:320px; max-height:280px; overflow-y:auto; }
+.search-result-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background .1s; }
+.search-result-item:hover { background:var(--surface-2); }
+.sri-jobno { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--gold-dark); font-weight:600; }
+.sri-customer { font-size:13px; font-weight:500; color:var(--ink); }
+.sri-meta { font-size:11px; color:var(--ink-light); margin-top:2px; }
+.search-empty { padding:14px; color:var(--ink-light); font-size:12px; text-align:center; }
+
+/* ── STATUS BAR ── */
+.statusbar { background:var(--surface); border-bottom:2px solid var(--border); padding:8px 32px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.status-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); }
+.status-options { display:flex; gap:6px; flex-wrap:wrap; }
+.status-btn { padding:4px 14px; border-radius:20px; border:1.5px solid var(--border-strong); background:transparent; color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .15s; }
+.status-btn:hover { border-color:var(--gold); color:var(--gold-dark); }
+.status-btn.active { background:var(--gold); border-color:var(--gold); color:var(--ink); font-weight:700; }
+.status-btn.active.green { background:var(--green); border-color:var(--green); color:#fff; }
+.status-btn.active.red { background:var(--red); border-color:var(--red); color:#fff; }
+.status-btn.active.blue { background:var(--blue); border-color:var(--blue); color:#fff; }
+.status-btn.active.dark { background:var(--ink); border-color:var(--ink); color:#fff; }
+.priority-wrap { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.priority-select { background:var(--surface-2); border:1px solid var(--border); color:var(--ink); padding:5px 10px; border-radius:var(--radius); font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; cursor:pointer; }
+.job-category-wrap { display:flex; align-items:center; gap:6px; }
+.cat-btn { padding:4px 14px; border-radius:20px; border:1.5px solid var(--border-strong); background:transparent; color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .15s; }
+.cat-btn.active { background:var(--ink); border-color:var(--ink); color:#fff; }
+
+/* ── BANNERS ── */
+.lock-banner { background:var(--red-bg); border-bottom:2px solid var(--red); padding:8px 32px; display:none; align-items:center; gap:12px; }
+.lock-banner.show { display:flex; }
+.lock-banner-text { font-size:12px; font-weight:600; color:var(--red); flex:1; }
+.offline-banner { background:var(--amber-bg); border-bottom:2px solid var(--amber); padding:6px 32px; display:none; align-items:center; gap:10px; font-size:12px; color:var(--amber); }
+.offline-banner.show { display:flex; }
+.sync-badge { background:var(--amber); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 7px; margin-left:6px; }
+.unsaved-banner { background:var(--amber-bg); border-bottom:2px solid var(--amber); padding:6px 32px; display:none; align-items:center; gap:10px; font-size:12px; color:var(--amber); font-weight:600; }
+.unsaved-banner.show { display:flex; }
+
+/* ── MAIN ── */
+.main-wrap { max-width:1200px; margin:0 auto; padding:20px 32px; display:flex; flex-direction:column; gap:16px; }
+
+/* ── CARD ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow); }
+.card-header { background:var(--ink); border-bottom:3px solid var(--gold); padding:10px 16px; display:flex; align-items:center; gap:10px; }
+.card-header-icon { font-size:14px; }
+.card-header-title { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold); flex:1; }
+.card-header-badge { font-size:10px; background:rgba(245,197,0,.15); color:var(--gold); border:1px solid rgba(245,197,0,.3); border-radius:10px; padding:2px 8px; font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; }
+.card-body { padding:16px; }
+
+/* ── FORM ── */
+.form-grid { display:grid; gap:12px; }
+.grid-2 { grid-template-columns:1fr 1fr; }
+.grid-3 { grid-template-columns:1fr 1fr 1fr; }
+.grid-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.span-2 { grid-column:span 2; }
+.span-3 { grid-column:span 3; }
+.span-4 { grid-column:span 4; }
+.field { display:flex; flex-direction:column; gap:4px; }
+.field-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); }
+.field input,.field select,.field textarea { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:7px 10px; font-family:'Barlow',sans-serif; font-size:13px; transition:border-color .15s,background .15s; outline:none; }
+.field input:focus,.field select:focus,.field textarea:focus { border-color:var(--gold); background:#FFFDF0; }
+body.dark .field input:focus,body.dark .field select:focus,body.dark .field textarea:focus { background:#2A2500; }
+.field textarea { resize:vertical; min-height:60px; }
+.field select option { background:var(--surface); }
+.field input[type="date"],.field input[type="time"] { font-family:'Share Tech Mono',monospace; }
+
+/* ── SECTION DIVIDER ── */
+.section-divider { display:flex; align-items:center; gap:10px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink-light); margin:4px 0; }
+.section-divider::before,.section-divider::after { content:''; flex:1; border-top:1px solid var(--border); }
+
+/* ── DYNAMIC TABLE ── */
+.dyn-table { width:100%; border-collapse:collapse; }
+.dyn-table thead tr { background:var(--surface-3); border-bottom:2px solid var(--border); }
+.dyn-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); padding:8px 8px; text-align:left; white-space:nowrap; }
+.dyn-table th.right { text-align:right; }
+.dyn-table tbody tr { border-bottom:1px solid var(--border); transition:background .1s; }
+.dyn-table tbody tr:hover { background:var(--surface-2); }
+.dyn-table td { padding:4px 4px; vertical-align:middle; }
+.dyn-table td.right { text-align:right; padding-right:8px; }
+.dyn-table tfoot tr { border-top:2px solid var(--border); background:var(--surface-2); }
+.dyn-table tfoot td { padding:8px 10px; font-weight:600; color:var(--ink-mid); font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+.dyn-table tfoot td.right { text-align:right; }
+.dyn-table td input,.dyn-table td select { background:transparent; border:1px solid transparent; border-radius:var(--radius); color:var(--ink); padding:5px 6px; font-family:'Barlow',sans-serif; font-size:12px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+.dyn-table td input:focus,.dyn-table td select:focus { border-color:var(--gold); background:#FFFDF0; }
+body.dark .dyn-table td input:focus,body.dark .dyn-table td select:focus { background:#2A2500; }
+.dyn-table td input.num { text-align:right; font-family:'Share Tech Mono',monospace; font-size:12px; }
+.dyn-table td input[type="date"],.dyn-table td input[type="time"] { font-family:'Share Tech Mono',monospace; font-size:11px; }
+.dyn-table td .row-total { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--ink-mid); text-align:right; padding-right:6px; min-width:80px; display:block; font-weight:600; }
+.btn-add-row { margin-top:10px; padding:6px 14px; background:transparent; border:1.5px dashed var(--border-strong); border-radius:var(--radius); color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-add-row:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-del { background:transparent; border:none; color:var(--border-strong); cursor:pointer; font-size:14px; padding:4px 6px; border-radius:3px; transition:color .15s; line-height:1; }
+.btn-del:hover { color:var(--red); }
+.scroll-hint { font-size:10px; color:var(--ink-light); font-style:italic; padding:0 0 4px 2px; display:none; }
+
+/* ── TASK SUB-ROWS ── */
+.task-subrows { background:var(--surface-2); }
+.task-subrow td { padding:3px 4px; }
+.task-subrow-inner { display:flex; align-items:center; gap:6px; padding:3px 8px 3px 32px; }
+.task-subrow-label { font-size:10px; color:var(--ink-light); letter-spacing:.5px; white-space:nowrap; }
+.task-subrow select,.task-subrow input { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:4px 8px; font-size:11px; font-family:'Barlow',sans-serif; outline:none; }
+.task-subrow select:focus,.task-subrow input:focus { border-color:var(--gold); }
+.btn-add-task { padding:3px 10px; background:transparent; border:1px dashed var(--border); border-radius:var(--radius); color:var(--ink-light); font-size:10px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:.5px; cursor:pointer; margin-left:32px; margin-bottom:4px; }
+.btn-add-task:hover { border-color:var(--gold); color:var(--gold-dark); }
+.ot-row { background:#FFF8E1 !important; }
+body.dark .ot-row { background:#2A1E00 !important; }
+.ot-badge { font-size:9px; background:var(--amber-bg); color:var(--amber); border:1px solid #FFCC80; border-radius:4px; padding:1px 5px; font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.5px; }
+
+/* ── COST SUMMARY ── */
+.cost-summary { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.cost-breakdown { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.cost-breakdown table { width:100%; border-collapse:collapse; }
+.cost-breakdown td { padding:8px 14px; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-mid); }
+.cost-breakdown td:last-child { text-align:right; font-family:'Share Tech Mono',monospace; color:var(--ink); font-weight:600; }
+.cost-breakdown tr.total-row td { font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:1px; text-transform:uppercase; background:var(--ink); color:#fff; border:none; }
+.cost-breakdown tr.total-row td:last-child { color:var(--gold); font-size:16px; }
+.cost-meta { display:flex; flex-direction:column; gap:10px; }
+.admin-locked { background:var(--surface-3); border-radius:var(--radius); padding:12px; border:1.5px dashed var(--border-strong); display:flex; flex-direction:column; gap:8px; }
+.admin-locked-label { font-size:10px; color:var(--ink-light); font-weight:600; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+.admin-locked-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; filter:blur(4px); pointer-events:none; transition:filter .3s; }
+.admin-locked-fields.unlocked { filter:none; pointer-events:all; }
+.btn-unlock { padding:4px 12px; background:transparent; border:1px solid var(--border-strong); border-radius:var(--radius); color:var(--ink-light); font-size:11px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:1px; cursor:pointer; transition:all .15s; }
+.btn-unlock:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-unlock.unlocked { border-color:var(--green); color:var(--green); }
+
+/* ── PROFIT INDICATOR ── */
+.profit-indicator { margin-top:8px; padding:8px 12px; border-radius:var(--radius); font-size:12px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:.5px; display:flex; align-items:center; gap:8px; }
+.profit-indicator.neutral { background:var(--surface-3); color:var(--ink-light); border:1px solid var(--border); }
+.profit-indicator.healthy { background:var(--green-bg); color:var(--green); border:1px solid var(--green); }
+.profit-indicator.warn    { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber); }
+.profit-indicator.danger  { background:var(--red-bg);   color:var(--red);   border:1px solid var(--red); }
+.cost-over-warning { margin-top:6px; padding:7px 12px; border-radius:var(--radius); font-size:11px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:.5px; background:var(--red-bg); color:var(--red); border:1px solid var(--red); display:none; }
+.cost-over-warning.show { display:flex; align-items:center; gap:6px; }
+.cost-near-warning { margin-top:6px; padding:7px 12px; border-radius:var(--radius); font-size:11px; font-family:'Barlow Condensed',sans-serif; font-weight:600; letter-spacing:.5px; background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber); display:none; }
+.cost-near-warning.show { display:flex; align-items:center; gap:6px; }
+
+/* ── QC ── */
+.qc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.qc-item { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; display:flex; align-items:center; gap:10px; }
+.qc-check { width:20px; height:20px; border:2px solid var(--border-strong); border-radius:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .15s; font-size:11px; }
+.qc-check.checked { background:var(--green); border-color:var(--green); color:#fff; }
+.qc-check.failed  { background:var(--red);   border-color:var(--red);   color:#fff; }
+.qc-text { font-size:11px; line-height:1.4; color:var(--ink-mid); }
+
+/* ── SIGN-OFF ── */
+.signoff-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.signoff-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:12px; }
+.signoff-role { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin-bottom:8px; }
+.signoff-line { border-top:1px solid var(--border-strong); margin-top:32px; padding-top:6px; font-size:10px; color:var(--ink-light); display:flex; justify-content:space-between; }
+
+/* ── REGISTER TABLE ── */
+.register-table { width:100%; border-collapse:collapse; margin-bottom:8px; }
+.register-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink-light); padding:6px 8px; text-align:left; background:var(--surface-3); border-bottom:1px solid var(--border); }
+.register-table td { padding:4px 4px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.register-table td input,.register-table td select { background:var(--surface-2); border:1px solid transparent; border-radius:var(--radius); color:var(--ink); padding:5px 7px; font-family:'Barlow',sans-serif; font-size:12px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+.register-table td input:focus,.register-table td select:focus { border-color:var(--gold); background:#FFFDF0; }
+body.dark .register-table td input:focus { background:#2A2500; }
+
+/* ── HSE ── */
+.hse-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+
+/* ── AUDIT TRAIL ── */
+.audit-list { display:flex; flex-direction:column; gap:5px; max-height:180px; overflow-y:auto; }
+.audit-entry { display:flex; gap:10px; align-items:flex-start; padding:6px 10px; background:var(--surface-2); border-radius:var(--radius); border-left:3px solid var(--border-strong); }
+.audit-entry.save   { border-left-color:var(--green); }
+.audit-entry.status { border-left-color:var(--blue); }
+.audit-entry.unlock { border-left-color:var(--amber); }
+.audit-entry.delete { border-left-color:var(--red); }
+.audit-time { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--ink-light); white-space:nowrap; flex-shrink:0; }
+.audit-text { font-size:11px; color:var(--ink-mid); line-height:1.4; }
+.audit-user { font-weight:600; color:var(--ink); }
+.audit-empty { font-size:11px; color:var(--ink-light); font-style:italic; padding:8px 0; }
+
+/* ── ACTION BAR ── */
+.action-bar { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; padding:0 0 24px; }
+.btn { padding:9px 22px; border-radius:var(--radius); font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; border:1.5px solid; transition:all .15s; display:inline-flex; align-items:center; gap:7px; }
+.btn-outline { background:transparent; border-color:var(--border-strong); color:var(--ink-light); }
+.btn-outline:hover { border-color:var(--gold); color:var(--gold-dark); }
+.btn-primary { background:var(--gold); border-color:var(--gold); color:var(--ink); }
+.btn-primary:hover { background:var(--gold-dark); border-color:var(--gold-dark); }
+.btn-save { background:var(--ink); border-color:var(--ink); color:#fff; }
+.btn-save:hover { background:var(--ink-mid); border-color:var(--ink-mid); }
+.btn-danger { background:transparent; border-color:var(--red); color:var(--red); }
+.btn-danger:hover { background:var(--red); color:#fff; }
+.btn-blue { background:transparent; border-color:var(--blue); color:var(--blue); }
+.btn-blue:hover { background:var(--blue); color:#fff; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--ink); border-radius:var(--radius); padding:12px 20px; font-size:13px; z-index:9999; display:none; box-shadow:var(--shadow-md); max-width:320px; color:#fff; border-left:4px solid var(--gold); }
+.toast.show { display:flex; align-items:center; gap:10px; }
+.toast.success { border-left-color:var(--green); }
+.toast.error   { border-left-color:var(--red); }
+.toast.loading { border-left-color:var(--gold); }
+.toast.warn    { border-left-color:var(--amber); }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:none; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--surface); border-radius:var(--radius-lg); padding:24px; max-width:420px; width:90%; box-shadow:var(--shadow-md); }
+.modal h3 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink); margin-bottom:12px; }
+.modal p { font-size:13px; color:var(--ink-light); margin-bottom:12px; line-height:1.6; }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.pin-input { width:100%; padding:10px 14px; font-family:'Share Tech Mono',monospace; font-size:20px; letter-spacing:6px; text-align:center; border:2px solid var(--border); border-radius:var(--radius); outline:none; color:var(--ink); background:var(--surface-2); }
+.pin-input:focus { border-color:var(--gold); background:#FFFDF0; }
+body.dark .pin-input:focus { background:#2A2500; }
+
+/* ── LOGIN ── */
+.login-overlay { position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:#0A0A0A; overflow:hidden; }
+.login-overlay.hidden { display:none; }
+.login-overlay::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(245,197,0,0.035) 1px, transparent 1px),linear-gradient(90deg, rgba(245,197,0,0.035) 1px, transparent 1px); background-size:52px 52px; animation:gridDrift 24s linear infinite; pointer-events:none; }
+.login-overlay::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 55% at 50% 50%, rgba(245,197,0,0.07) 0%, transparent 65%); pointer-events:none; }
+@keyframes gridDrift { from{background-position:0 0} to{background-position:52px 52px} }
+.login-corner { position:absolute; width:36px; height:36px; border-color:rgba(245,197,0,0.25); border-style:solid; pointer-events:none; }
+.login-corner.tl { top:24px; left:24px; border-width:2px 0 0 2px; }
+.login-corner.tr { top:24px; right:24px; border-width:2px 2px 0 0; }
+.login-corner.bl { bottom:24px; left:24px; border-width:0 0 2px 2px; }
+.login-corner.br { bottom:24px; right:24px; border-width:0 2px 2px 0; }
+.login-accent-left, .login-accent-right { position:absolute; top:0; bottom:0; width:2px; background:linear-gradient(to bottom, transparent 0%, rgba(245,197,0,0.35) 25%, rgba(245,197,0,0.35) 75%, transparent 100%); pointer-events:none; }
+.login-accent-left { left:0; } .login-accent-right { right:0; }
+.login-box { position:relative; z-index:2; width:100%; max-width:420px; background:rgba(18,18,18,0.97); border:1px solid rgba(245,197,0,0.18); border-radius:3px; padding:0; box-shadow:0 0 0 1px rgba(0,0,0,0.5),0 0 80px rgba(245,197,0,0.07),0 32px 80px rgba(0,0,0,0.7); animation:loginRise .45s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes loginRise { from{opacity:0;transform:translateY(20px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+.login-box::before { display:none; } /* streak handled by .login-box-streak */
+.login-box.shake { animation:loginShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes loginShake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-5px)} 40%,60%{transform:translateX(5px)} 100%{transform:translateX(0)} }
+.login-header { padding:28px 32px 22px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:18px; }
+.login-logo-wrap { width:64px; height:64px; border-radius:5px; background:#FFFFFF; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+.login-logo-wrap img { width:90%; height:90%; object-fit:contain; }
+.login-brand-text { display:flex; flex-direction:column; gap:4px; }
+.login-brand-text .name { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:#FFFFFF; line-height:1; }
+.login-brand-text .name sup { font-size:13px; font-weight:800; vertical-align:super; letter-spacing:1px; color:var(--gold); }
+.login-brand-text .sub { font-family:'Barlow Condensed',sans-serif; font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:var(--gold); opacity:0.8; line-height:1; }
+.login-body { padding:26px 32px 30px; }
+.login-eyebrow { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:3.5px; text-transform:uppercase; color:rgba(245,197,0,0.5); margin-bottom:4px; }
+.login-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#FFFFFF; margin-bottom:22px; line-height:1; }
+.login-field { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.login-field label { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+.login-field input { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:3px; color:#FFFFFF; padding:11px 14px; font-family:'Barlow',sans-serif; font-size:14px; outline:none; transition:border-color .2s,background .2s,box-shadow .2s; width:100%; }
+.login-field input::placeholder { color:rgba(255,255,255,0.2); }
+.login-field input:focus { border-color:rgba(245,197,0,0.6); background:rgba(245,197,0,0.05); box-shadow:0 0 0 3px rgba(245,197,0,0.08); }
+.login-pw-wrap { position:relative; }
+.login-pw-wrap input { padding-right:46px; }
+.login-pw-toggle { position:absolute; right:0; top:0; height:100%; width:44px; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.35); transition:color .15s; }
+.login-pw-toggle:hover { color:var(--gold); }
+.login-pw-toggle svg { width:16px; height:16px; flex-shrink:0; }
+.login-btn { width:100%; padding:13px; background:var(--gold); border:none; border-radius:3px; color:#1A1A1A; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:800; letter-spacing:3px; text-transform:uppercase; cursor:pointer; margin-top:6px; transition:background .15s,transform .1s,box-shadow .15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.login-btn:hover { background:var(--gold-dark); box-shadow:0 4px 20px rgba(245,197,0,0.25); }
+.login-btn:active { transform:scale(0.99); }
+.login-btn.loading { pointer-events:none; opacity:0.8; }
+.login-btn .btn-spinner { width:14px; height:14px; border:2px solid rgba(26,26,26,0.3); border-top-color:#1A1A1A; border-radius:50%; animation:spin .6s linear infinite; display:none; }
+.login-btn.loading .btn-spinner { display:block; }
+.login-btn.loading .btn-label { opacity:0.7; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.login-error { font-size:11px; color:#FF6B6B; text-align:center; margin-top:12px; min-height:16px; font-family:'Barlow Condensed',sans-serif; letter-spacing:.5px; }
+.login-footer { padding:12px 32px; border-top:1px solid rgba(255,255,255,0.05); text-align:center; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.15); font-family:'Barlow Condensed',sans-serif; }
+.login-role-badge { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:20px; font-size:11px; font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.login-role-badge.admin { background:var(--gold-light); color:var(--gold-dark); border:1px solid var(--gold); }
+.login-role-badge.user  { background:var(--blue-bg); color:var(--blue); border:1px solid #90CAF9; }
+@media (max-width:480px) { .login-header{padding:22px 20px 18px} .login-body{padding:22px 20px 24px} .login-footer{padding:10px 20px} .login-corner{width:20px;height:20px} .login-box{max-width:calc(100% - 32px)} }
+
+
+
+/* ── PERIMETER STREAK ── */
+@property --a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.login-box-streak {
+  position:absolute; inset:-1.5px;
+  border-radius:4px;
+  pointer-events:none; z-index:4;
+  background: conic-gradient(
+    from var(--a),
+    transparent 0deg,
+    transparent 228deg,
+    rgba(245,197,0,0.0) 232deg,
+    rgba(245,197,0,0.15) 238deg,
+    rgba(245,197,0,0.55) 244deg,
+    #FFE566 248deg,
+    rgba(245,197,0,0.55) 252deg,
+    rgba(245,197,0,0.15) 258deg,
+    rgba(245,197,0,0.0) 264deg,
+    transparent 268deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1.5px;
+  animation: streakOrbit 5s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(245,197,0,0.7)) drop-shadow(0 0 8px rgba(245,197,0,0.35));
+}
+@keyframes streakOrbit {
+  from { --a: 0deg; }
+  to   { --a: 360deg; }
+}
+
+/* ── DASHBOARD ── */
+.dashboard-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:8000; display:none; flex-direction:column; overflow:hidden; }
+.dashboard-overlay.show { display:flex; }
+.dash-header { background:var(--ink); border-bottom:4px solid var(--gold); padding:12px 28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.dash-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--gold); flex:1; }
+.dash-toolbar { padding:12px 28px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.dash-search { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:7px 12px; font-family:'Barlow',sans-serif; font-size:13px; flex:1; min-width:200px; outline:none; }
+.dash-search:focus { border-color:var(--gold); }
+.dash-filter { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 10px; font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; outline:none; }
+.dash-body { flex:1; overflow-y:auto; padding:20px 28px; }
+.dash-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
+.dash-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 18px; box-shadow:var(--shadow); }
+.dash-stat-num { font-family:'Share Tech Mono',monospace; font-size:26px; font-weight:700; color:var(--gold); line-height:1; }
+.dash-stat-label { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin-top:4px; }
+.dash-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow); }
+.dash-table { width:100%; border-collapse:collapse; }
+.dash-table thead tr { background:var(--ink); }
+.dash-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); padding:10px 14px; text-align:left; white-space:nowrap; cursor:pointer; user-select:none; }
+.dash-table th:hover { color:#fff; }
+.dash-table th .sa { font-size:9px; margin-left:3px; opacity:.5; }
+.dash-table th.sorted .sa { opacity:1; }
+.dash-table tbody tr { border-bottom:1px solid var(--border); transition:background .1s; cursor:pointer; }
+.dash-table tbody tr:hover { background:var(--surface-2); }
+.dash-table td { padding:9px 14px; font-size:12px; color:var(--ink-mid); }
+.dash-jno { font-family:'Share Tech Mono',monospace; color:var(--gold-dark); font-weight:700; font-size:12px; }
+.dash-cust { font-weight:600; color:var(--ink); }
+.dash-empty { padding:48px; text-align:center; color:var(--ink-light); font-size:13px; }
+.status-pill { display:inline-block; padding:2px 10px; border-radius:20px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+.sp-received  { background:var(--surface-3); color:var(--ink-light); border:1px solid var(--border-strong); }
+.sp-progress  { background:var(--blue-bg);   color:var(--blue);      border:1px solid #90CAF9; }
+.sp-hold      { background:var(--amber-bg);  color:var(--amber);     border:1px solid #FFCC80; }
+.sp-completed { background:var(--green-bg);  color:var(--green);     border:1px solid #A5D6A7; }
+.sp-invoiced  { background:var(--ink);       color:#fff; }
+.sp-closed    { background:#444;             color:#aaa; }
+
+/* ── READONLY ── */
+body.readonly .field input,body.readonly .field select,body.readonly .field textarea,
+body.readonly .dyn-table td input,body.readonly .dyn-table td select,
+body.readonly .register-table td input,body.readonly .register-table td select { pointer-events:none; background:var(--surface-3); color:var(--ink-mid); }
+body.readonly .btn-add-row,body.readonly .btn-add-task,body.readonly .btn-del { display:none; }
+body.readonly .action-bar .btn-save { opacity:.4; pointer-events:none; }
+body.readonly .qc-check { pointer-events:none; }
+
+/* ── PRINT ── */
+@media print {
+  body { background:#fff; color:#000; font-size:11px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .toolbar,.statusbar,.action-bar,.lock-banner,.offline-banner,.unsaved-banner,.toast,.dashboard-overlay { display:none !important; }
+  .topbar { background:var(--ink) !important; border-bottom:4px solid var(--gold) !important; }
+  .brand-text .name { color:#fff !important; }
+  .topbar-center .title { color:var(--gold) !important; }
+  .job-no-value { color:var(--gold) !important; }
+  .card { break-inside:avoid; box-shadow:none; border:1px solid #ddd; }
+  .card-header { background:var(--ink) !important; }
+  .card-header-title { color:var(--gold) !important; }
+  .main-wrap { padding:8px 16px; max-width:100%; }
+  .field input,.field select,.field textarea { background:#f9f9f9; border:1px solid #ccc; color:#000; }
+  .dyn-table td input,.dyn-table td select { background:transparent; border-bottom:1px solid #ccc; color:#000; }
+  .cost-breakdown tr.total-row td { background:var(--ink) !important; color:#fff !important; }
+  .cost-breakdown tr.total-row td:last-child { color:var(--gold) !important; }
+  .admin-locked-fields { filter:none !important; }
+  .admin-locked-fields .field input { background:#f9f9f9; border:1px solid #ccc; color:#000; }
+  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr 1fr; }
+  .qc-grid { grid-template-columns:repeat(2,1fr); }
+  .cost-summary { grid-template-columns:1fr; }
+  .signoff-box { background:#f9f9f9; border:1px solid #ccc; }
+  .audit-card { display:none; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width:768px) {
+  .topbar { padding:10px 12px; min-height:auto; flex-wrap:wrap; gap:8px; }
+  .topbar-center { display:none; }
+  .brand-text .name { font-size:16px; }
+  .brand-text .address { display:none; }
+  .brand-logo { width:40px; height:40px; }
+  .topbar-right { flex-direction:row; align-items:center; gap:10px; }
+  .job-no-value { font-size:16px; }
+  .last-saved { display:none; }
+  .main-wrap { padding:10px 12px; gap:12px; }
+  .toolbar { padding:8px 12px; gap:6px; flex-wrap:wrap; }
+  .toolbar-divider { display:none; }
+  .statusbar { padding:8px 12px; gap:6px; }
+  .status-options { gap:4px; }
+  .status-btn { padding:3px 10px; font-size:11px; }
+  .priority-wrap { margin-left:0; width:100%; justify-content:flex-start; }
+  .card-body { padding:12px; }
+  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+  .span-2,.span-3,.span-4 { grid-column:span 1; }
+  .cost-summary { grid-template-columns:1fr; }
+  .qc-grid { grid-template-columns:1fr 1fr; }
+  .signoff-grid { grid-template-columns:1fr; }
+  .hse-grid { grid-template-columns:1fr; }
+  .dyn-table { min-width:600px; }
+  .register-table { min-width:400px; }
+  .login-box { max-width:calc(100% - 32px); margin:16px; }
+  .login-corner { width:20px; height:20px; }
+  .search-wrap { min-width:0; flex:1; }
+  .search-input { min-width:0; }
+  .action-bar { justify-content:stretch; }
+  .action-bar .btn { flex:1; justify-content:center; font-size:12px; padding:8px 10px; }
+  .admin-locked-fields { grid-template-columns:1fr; }
+  .scroll-hint { display:block; }
+  .dash-stats { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <!-- Corner brackets -->
+  <div class="login-corner tl"></div>
+  <div class="login-corner tr"></div>
+  <div class="login-corner bl"></div>
+  <div class="login-corner br"></div>
+  <!-- Side accent lines -->
+  <div class="login-accent-left"></div>
+  <div class="login-accent-right"></div>
+
+  <div class="login-box" id="login-box">
+    <div class="login-box-streak"></div>
+
+    <!-- Header -->
+    <div class="login-header">
+      <div class="login-logo-wrap">
+        <img src="QQL_2026.svg" alt="Q2 Machines Logo">
+      </div>
+      <div class="login-brand-text">
+        <div class="name">Q<sup>2</sup> Machines</div>
+        <div class="sub">Operations &amp; Resource Tracking System</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="login-body">
+      <div class="login-eyebrow">Secure Access</div>
+      <div class="login-title">Sign In</div>
+
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
+      </div>
+
+      <div class="login-field">
+        <label>Password</label>
+        <div class="login-pw-wrap">
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doLogin()">
+          <button type="button" class="login-pw-toggle" id="pw-toggle-btn" onclick="togglePw()" title="Show/hide password">
+            <svg id="pw-eye-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;display:block;flex-shrink:0;">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="login-btn" id="login-btn" onclick="doLogin()">
+        <div class="btn-spinner"></div>
+        <span class="btn-label">Sign In</span>
+      </button>
+
+      <div class="login-error" id="login-error"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">Q² Machines &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; All rights reserved</div>
+
+  </div>
+
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo"><img src="QQL_2026.svg" alt="Q2 Machines Logo"></div>
+    <div class="brand-text">
+      <div class="name">Q2 Machines</div>
+      <div class="address">Warren Road, Bejucal, Cunupia, Trinidad<br>(868) 230-9702 &nbsp;·&nbsp; www.q2m.io &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="244d4a424b645516490a4d4b">[email&#160;protected]</a></div>
+    </div>
+  </div>
+  <div class="topbar-center"><div class="title">Job Card</div></div>
+  <div class="topbar-right">
+    <div class="topbar-controls">
+      <div class="draft-dot" id="draft-dot" title="Unsaved changes"></div>
+      <span class="login-role-badge" id="role-badge"></span>
+      <button class="btn-topbar" id="change-pw-btn" onclick="openChangePw()" style="display:none;" title="Change passwords / PIN">🔑 Passwords</button>
+      <button class="btn-topbar" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">🌙</button>
+      <button class="btn-topbar" onclick="doLogout()">Sign Out</button>
+    </div>
+    <div class="job-no-label">Job No.</div>
+    <div class="job-no-value" id="job-id-display">JC-0001</div>
+    <div class="last-saved" id="last-saved-display">Not yet saved</div>
+  </div>
+</div>
+
+<!-- LOCK BANNER -->
+<div class="lock-banner" id="lock-banner">
+  <span class="lock-banner-text">🔒 This job is locked (Invoiced / Closed). View only.</span>
+  <button class="btn btn-outline" style="padding:4px 12px;font-size:11px;" onclick="promptAdminUnlock('job')">Admin Unlock</button>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offline-banner">
+  <span>⚠ You are offline. Changes will sync when connection is restored.</span>
+  <span class="sync-badge" id="sync-count" style="display:none">0 pending</span>
+</div>
+
+<!-- UNSAVED BANNER -->
+<div class="unsaved-banner" id="unsaved-banner">
+  <span>● Unsaved changes — remember to save before leaving.</span>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-section">
+    <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="safeNewJobCard()">+ New Job</button>
+    <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="openDashboard()">📋 All Jobs</button>
+    <button class="btn btn-outline btn-blue" style="padding:5px 12px;font-size:11px;" onclick="duplicateJob()">⧉ Duplicate</button>
+  </div>
+  <div class="toolbar-divider"></div>
+  <div class="search-wrap">
+    <select class="search-select" id="search-type">
+      <option value="jobno">Job No.</option>
+      <option value="customer">Customer</option>
+    </select>
+    <input class="search-input" id="search-input" placeholder="Search and load existing job card..." oninput="searchJobs()" onblur="hideSearchAfterDelay()">
+    <div id="search-results-box" class="search-results" style="display:none;"></div>
+  </div>
+  <div class="toolbar-divider"></div>
+  <button class="btn btn-save" onclick="submitToSheets()">☁ Save to Sheets</button>
+  <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="window.print()">🖨 Print</button>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <span class="status-label">Category:</span>
+  <div class="job-category-wrap">
+    <button class="cat-btn active" id="cat-customer" onclick="setCategory('customer',this)">Customer</button>
+    <button class="cat-btn" id="cat-internal" onclick="setCategory('internal',this)">Internal</button>
+  </div>
+  <div class="toolbar-divider" style="height:24px;"></div>
+  <span class="status-label">Status:</span>
+  <div class="status-options" id="status-btns">
+    <button class="status-btn active" data-color="" onclick="setStatus(this)">Received</button>
+    <button class="status-btn" data-color="blue" onclick="setStatus(this)">In Progress</button>
+    <button class="status-btn" data-color="" onclick="setStatus(this)">On Hold</button>
+    <button class="status-btn" data-color="green" onclick="setStatus(this)">Completed</button>
+    <button class="status-btn" data-color="dark" onclick="confirmLockStatus(this,'Invoiced')">Invoiced</button>
+    <button class="status-btn" data-color="dark" onclick="confirmLockStatus(this,'Closed')">Closed</button>
+  </div>
+  <div class="priority-wrap">
+    <span class="status-label">Priority:</span>
+    <select class="priority-select" id="priority-select">
+      <option>Normal</option><option>Urgent</option><option>Rush</option><option>Scheduled</option>
+    </select>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- 1. CUSTOMER & JOB INFO -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">👤</span><span class="card-header-title">Customer &amp; Job Information</span></div>
+    <div class="card-body">
+      <div class="form-grid grid-4">
+        <div class="field span-2"><label class="field-label">Customer Name / Company</label><input type="text" id="f-customer" placeholder="e.g. ABC Engineering Ltd."></div>
+        <div class="field"><label class="field-label">Contact Person</label><input type="text" id="f-contact" placeholder="Full name"></div>
+        <div class="field"><label class="field-label">Phone / WhatsApp</label><input type="tel" id="f-phone" placeholder="+1 (868) 000-0000"></div>
+        <div class="field span-2"><label class="field-label">Email</label><input type="email" id="f-email" placeholder="customer@example.com"></div>
+        <div class="field"><label class="field-label">Date Received</label><input type="date" id="f-date-received"></div>
+        <div class="field"><label class="field-label">Due Date</label><input type="date" id="f-due-date"></div>
+        <div class="field span-4"><label class="field-label">Job Description / Scope of Work</label><textarea id="f-description" rows="3" placeholder="Describe the work to be carried out..."></textarea></div>
+        <div class="field span-2"><label class="field-label">Part / Component Name</label><input type="text" id="f-part-name" placeholder="e.g. Pump Shaft, Bracket"></div>
+        <div class="field"><label class="field-label">Job Type</label>
+          <select id="f-job-type" onchange="onJobTypeChange()">
+            <option value="">Select...</option>
+            <option>Machining</option><option>Fabrication / Welding</option><option>Repair / Overhaul</option>
+            <option>Modification</option><option>Assembly</option><option>Inspection / Testing</option>
+            <option>Internal — Maintenance</option><option>Internal — Manufacturing</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label class="field-label">Customer PO / Reference</label><input type="text" id="f-cust-po" placeholder="PO number"></div>
+        <div class="field span-2"><label class="field-label">Quoted Amount (TTD)</label><input type="number" id="f-quoted" placeholder="0.00" step="0.01" oninput="syncQuoted(this)"></div>
+        <div class="field"><label class="field-label">Accepted By (Shop)</label><input type="text" id="f-accepted-by" placeholder="Staff member"></div>
+        <div class="field"><label class="field-label">Modified By</label><input type="text" id="f-modified-by" placeholder="Your name"></div>
+      </div>
+      <div class="section-divider" style="margin-top:16px;">Drawing Control Register</div>
+      <table class="register-table"><thead><tr>
+        <th style="width:120px">Drawing No.</th><th>Drawing Title</th>
+        <th style="width:90px">Revision No.</th><th style="width:120px">Date</th>
+        <th style="width:120px">Source</th><th style="width:32px"></th>
+      </tr></thead><tbody id="drawings-body"></tbody></table>
+      <button class="btn-add-row" onclick="addDrawingRow()">+ Add Drawing</button>
+      <div class="section-divider" style="margin-top:16px;">Specifications Register</div>
+      <table class="register-table"><thead><tr>
+        <th style="width:120px">Spec No. / Ref</th><th>Spec Title / Description</th>
+        <th style="width:90px">Revision No.</th><th style="width:120px">Date Received</th>
+        <th style="width:100px">Source</th><th style="width:32px"></th>
+      </tr></thead><tbody id="specs-body"></tbody></table>
+      <button class="btn-add-row" onclick="addSpecRow()">+ Add Specification</button>
+    </div>
+  </div>
+
+  <!-- 2. H&S / JSA -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">⚠</span><span class="card-header-title">Health &amp; Safety — JSA Reference</span></div>
+    <div class="card-body">
+      <div class="form-grid hse-grid">
+        <div class="field"><label class="field-label">JSA Reference No.</label><input type="text" id="f-jsa-ref" placeholder="Auto-generated on save" readonly style="background:var(--surface-3);color:var(--ink-light);"></div>
+        <div class="field span-2"><label class="field-label">JSA Title / Description</label><input type="text" id="f-jsa-title" placeholder="e.g. Motor Repair — Hot Work JSA"></div>
+        <div class="field"><label class="field-label">Date Issued</label><input type="date" id="f-jsa-date"></div>
+        <div class="field"><label class="field-label">Issued By</label><input type="text" id="f-jsa-by" placeholder="Name of issuer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LABOUR -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">🕐</span><span class="card-header-title">Labour &amp; Time Tracking</span><span class="card-header-badge" id="labour-hrs-badge">0.00 hrs</span></div>
+    <div class="card-body">
+      <p class="scroll-hint">← scroll to see all columns →</p>
+      <div style="overflow-x:auto;">
+        <table class="dyn-table" id="labour-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th style="width:160px">Classification</th>
+            <th style="width:130px">Technician</th><th style="width:120px">Location</th>
+            <th style="width:90px" class="right">Start</th><th style="width:90px" class="right">End</th>
+            <th style="width:60px" class="right">Hrs</th><th style="width:70px">Type</th>
+            <th style="width:100px" class="right">Rate (TTD)</th><th style="width:100px" class="right">Amount</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="labour-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Labour:</td>
+            <td id="labour-hrs-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;">0.00</td>
+            <td></td><td></td>
+            <td id="labour-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addLabourRow()">+ Add Labour Entry</button>
+    </div>
+  </div>
+
+  <!-- 4. EQUIPMENT -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">🔧</span><span class="card-header-title">Equipment &amp; Machines Used</span></div>
+    <div class="card-body">
+      <p class="scroll-hint">← scroll to see all columns →</p>
+      <div style="overflow-x:auto;">
+        <table class="dyn-table" id="equip-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th style="width:180px">Machine / Equipment</th>
+            <th style="width:100px">Asset No.</th><th style="width:120px">Location</th>
+            <th style="width:90px" class="right">Setup (hrs)</th><th style="width:90px" class="right">Run Time (hrs)</th>
+            <th style="width:110px" class="right">Rate/hr (TTD)</th><th style="width:100px" class="right">Amount</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="equip-body"></tbody>
+          <tfoot><tr>
+            <td colspan="7" class="right">Total Machine Cost:</td>
+            <td id="equip-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addEquipRow()">+ Add Machine / Equipment</button>
+    </div>
+  </div>
+
+  <!-- 5. MATERIALS -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">📦</span><span class="card-header-title">Materials &amp; Stock Used</span></div>
+    <div class="card-body">
+      <p class="scroll-hint">← scroll to see all columns →</p>
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Material / Description</th>
+            <th style="width:110px">Stock Code</th><th style="width:60px">Qty</th>
+            <th style="width:75px">Unit</th><th style="width:110px" class="right">Unit Cost (TTD)</th>
+            <th style="width:110px" class="right">Total Cost</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="materials-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Materials:</td>
+            <td id="materials-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addMaterialRow()">+ Add Material</button>
+    </div>
+  </div>
+
+  <!-- 6. CONSUMABLES -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">🧪</span><span class="card-header-title">Consumables Used</span></div>
+    <div class="card-body">
+      <p class="scroll-hint">← scroll to see all columns →</p>
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Consumable / Description</th>
+            <th style="width:150px">Category</th><th style="width:60px">Qty</th>
+            <th style="width:75px">Unit</th><th style="width:110px" class="right">Unit Cost (TTD)</th>
+            <th style="width:110px" class="right">Total Cost</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="consumables-body"></tbody>
+          <tfoot><tr>
+            <td colspan="6" class="right">Total Consumables:</td>
+            <td id="consumables-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addConsumableRow()">+ Add Consumable</button>
+    </div>
+  </div>
+
+  <!-- 7. SUB-CONTRACTORS -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">🤝</span><span class="card-header-title">Sub-contractors &amp; Outsourced Work</span></div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="dyn-table">
+          <thead><tr>
+            <th style="width:120px">Date</th><th>Sub-contractor / Supplier</th>
+            <th>Work / Service Description</th><th style="width:130px">Invoice / Ref No.</th>
+            <th style="width:110px" class="right">Cost (TTD)</th><th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="subs-body"></tbody>
+          <tfoot><tr>
+            <td colspan="4" class="right">Total Sub-contractor Cost:</td>
+            <td id="subs-cost-total" class="right" style="font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">$0.00</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <button class="btn-add-row" onclick="addSubRow()">+ Add Sub-contractor</button>
+    </div>
+  </div>
+
+  <!-- 8. COSTING SUMMARY -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">💰</span><span class="card-header-title">Costing Summary</span></div>
+    <div class="card-body">
+      <div class="cost-summary">
+        <div>
+          <div class="cost-breakdown">
+            <table>
+              <tr><td>Labour</td><td id="cs-labour">$0.00</td></tr>
+              <tr><td>Machine / Equipment</td><td id="cs-equip">$0.00</td></tr>
+              <tr><td>Materials &amp; Stock</td><td id="cs-materials">$0.00</td></tr>
+              <tr><td>Consumables</td><td id="cs-consumables">$0.00</td></tr>
+              <tr><td>Sub-contractors</td><td id="cs-subs">$0.00</td></tr>
+              <tr><td>Other / Miscellaneous</td><td><input type="number" id="cs-misc" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--ink);font-family:'Share Tech Mono',monospace;font-size:12px;text-align:right;width:90px;outline:none;padding:2px 4px;" placeholder="0.00" value="0" oninput="updateCostSummary()"></td></tr>
+              <tr class="total-row"><td>Total Job Cost</td><td id="cs-total">$0.00</td></tr>
+            </table>
+          </div>
+          <div class="cost-over-warning" id="cost-over-warning">⚠ Job cost exceeds quoted amount!</div>
+          <div class="cost-near-warning" id="cost-near-warning">⚡ Job cost is approaching quoted amount.</div>
+        </div>
+        <div class="cost-meta">
+          <div class="form-grid grid-2">
+            <div class="field span-2"><label class="field-label">Quoted Amount (TTD)</label><input type="number" id="f-quoted-2" placeholder="0.00" step="0.01" oninput="syncQuoted(this)"></div>
+            <div class="field span-2"><label class="field-label">Payment Terms</label>
+              <select id="f-payment-terms">
+                <option>COD – Cash on Delivery</option><option>50% Deposit, Balance on Completion</option>
+                <option>Net 30 Days</option><option>Net 15 Days</option><option>Prepaid in Full</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field span-2"><label class="field-label">Internal Notes (Costing)</label><textarea id="f-costing-notes" rows="2" placeholder="Notes on pricing, discounts..."></textarea></div>
+          </div>
+          <div class="admin-locked" id="admin-cost-section">
+            <div class="admin-locked-label">
+              <span>🔒 Commercial — Admin Only</span>
+              <button class="btn-unlock" id="cost-unlock-btn" onclick="promptAdminUnlock('cost')">Unlock</button>
+            </div>
+            <div class="admin-locked-fields" id="admin-cost-fields">
+              <div class="field"><label class="field-label">Margin / Markup (%)</label><input type="number" id="markup-pct" placeholder="0" step="1" oninput="updateCostSummary()"></div>
+              <div class="field"><label class="field-label">Selling Price (TTD)</label><input type="number" id="selling-price" placeholder="0.00" step="0.01" readonly style="color:var(--gold-dark);font-weight:600;"></div>
+              <div class="field span-2"><label class="field-label">Gross Profit (TTD)</label><input type="number" id="gross-profit" placeholder="0.00" readonly style="color:var(--green);font-weight:600;"></div>
+            </div>
+            <div class="profit-indicator neutral" id="profit-indicator">— Enter markup to see margin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. QC & SIGN-OFF -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-icon">✅</span><span class="card-header-title">Quality Check &amp; Sign-Off</span></div>
+    <div class="card-body">
+      <div class="field-label" style="margin-bottom:8px;">Quality Checklist — click to toggle Pass / Fail</div>
+      <div class="qc-grid" id="qc-grid"></div>
+      <div style="margin-top:16px;">
+        <div class="form-grid grid-3">
+          <div class="field"><label class="field-label">Date Completed</label><input type="date" id="f-date-completed"></div>
+          <div class="field"><label class="field-label">Inspected By</label><input type="text" id="f-inspected-by" placeholder="Inspector name"></div>
+          <div class="field"><label class="field-label">Overall Result</label>
+            <select id="f-qc-result">
+              <option value="">Select...</option><option>Pass — Released to Customer</option>
+              <option>Conditional Pass — Minor Rework</option><option>Fail — Rework Required</option><option>Scrapped</option>
+            </select>
+          </div>
+          <div class="field span-3"><label class="field-label">QC Notes / Non-Conformances</label><textarea id="f-qc-notes" rows="2" placeholder="Note any defects, rework, deviations..."></textarea></div>
+        </div>
+      </div>
+      <div class="section-divider" style="margin-top:16px;">Associated Reports</div>
+      <table class="register-table"><thead><tr>
+        <th style="width:150px">Report Ref No.</th><th>Report Title</th><th style="width:32px"></th>
+      </tr></thead><tbody id="reports-body"></tbody></table>
+      <button class="btn-add-row" onclick="addReportRow()">+ Add Report</button>
+      <div class="section-divider" style="margin-top:20px;">Authorisations</div>
+      <div style="height:10px;"></div>
+      <div class="signoff-grid">
+        <div class="signoff-box"><div class="signoff-role">Workshop Supervisor</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+        <div class="signoff-box"><div class="signoff-role">Quality Inspector / Foreman</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+        <div class="signoff-box"><div class="signoff-role">Customer Acceptance</div><div class="signoff-line"><span>Name: _________________</span><span>Date: ___________</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. AUDIT TRAIL -->
+  <div class="card audit-card">
+    <div class="card-header"><span class="card-header-icon">📋</span><span class="card-header-title">Activity Log</span><span class="card-header-badge" id="audit-badge">0 entries</span></div>
+    <div class="card-body">
+      <div class="audit-list" id="audit-list">
+        <p class="audit-empty">No activity recorded yet for this job.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn btn-danger" id="delete-job-btn" onclick="deleteJob()" style="display:none;">🗑 Delete Job</button>
+    <button class="btn btn-danger" onclick="safeNewJobCard()">↺ New / Reset</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨 Print / PDF</button>
+    <button class="btn btn-save" onclick="submitToSheets()">☁ Save to Sheets</button>
+  </div>
+
+</div><!-- end main-wrap -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<!-- ADMIN UNLOCK MODAL -->
+<div class="modal-overlay" id="admin-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <h3>🔒 Admin Unlock</h3>
+    <p>Enter the admin PIN to unlock this section.</p>
+    <input type="password" class="pin-input" id="admin-pin-input" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')verifyAdminPin()">
+    <div id="admin-pin-error" style="font-size:11px;color:var(--red);margin-top:8px;min-height:16px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('admin-modal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-primary" onclick="verifyAdminPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <h3 id="confirm-title">Confirm</h3>
+    <p id="confirm-msg">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('confirm-modal').classList.remove('show');confirmReject&&confirmReject()">Cancel</button>
+      <button class="btn btn-primary" id="confirm-ok-btn" onclick="document.getElementById('confirm-modal').classList.remove('show');confirmResolve&&confirmResolve()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard-overlay" id="dashboard-overlay">
+  <div class="dash-header">
+    <div class="dash-title">📋 All Job Cards</div>
+    <button class="btn btn-outline" style="padding:6px 16px;font-size:12px;color:#ccc;border-color:#555;" onclick="closeDashboard()">✕ Close</button>
+  </div>
+  <div class="dash-toolbar">
+    <input class="dash-search" id="dash-search" placeholder="Filter by job no., customer, description..." oninput="renderDashTable()">
+    <select class="dash-filter" id="dash-status-filter" onchange="renderDashTable()">
+      <option value="">All Statuses</option>
+      <option>Received</option><option>In Progress</option><option>On Hold</option>
+      <option>Completed</option><option>Invoiced</option><option>Closed</option>
+    </select>
+    <select class="dash-filter" id="dash-priority-filter" onchange="renderDashTable()">
+      <option value="">All Priorities</option>
+      <option>Normal</option><option>Urgent</option><option>Rush</option><option>Scheduled</option>
+    </select>
+    <button class="btn btn-save" style="padding:6px 16px;font-size:12px;" onclick="loadDashboard()">↺ Refresh</button>
+  </div>
+  <div class="dash-body">
+    <div class="dash-stats" id="dash-stats"></div>
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead><tr>
+          <th onclick="dashSort('Job No')" id="dth-jobno">Job No. <span class="sa">↕</span></th>
+          <th onclick="dashSort('Customer')" id="dth-customer">Customer <span class="sa">↕</span></th>
+          <th onclick="dashSort('Job Type')" id="dth-type">Type <span class="sa">↕</span></th>
+          <th onclick="dashSort('Status')" id="dth-status">Status <span class="sa">↕</span></th>
+          <th onclick="dashSort('Priority')" id="dth-priority">Priority <span class="sa">↕</span></th>
+          <th onclick="dashSort('Date Received')" id="dth-received">Received <span class="sa">↕</span></th>
+          <th onclick="dashSort('Due Date')" id="dth-due">Due <span class="sa">↕</span></th>
+          <th>Description</th>
+        </tr></thead>
+        <tbody id="dash-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="changepw-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal" style="max-width:480px;">
+    <h3>🔑 Manage Credentials</h3>
+    <p>Update passwords and admin PIN. Changes take effect immediately.</p>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">Admin Password</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="field"><label class="field-label">New Password</label><input type="password" id="cpw-admin-new" placeholder="New password" autocomplete="new-password"></div>
+          <div class="field"><label class="field-label">Confirm</label><input type="password" id="cpw-admin-confirm" placeholder="Confirm" autocomplete="new-password"></div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:8px;padding:5px 14px;font-size:11px;" onclick="doChangePassword('admin')">Update Admin Password</button>
+        <div id="cpw-admin-msg" style="font-size:11px;margin-top:6px;min-height:16px;"></div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">User Password</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="field"><label class="field-label">New Password</label><input type="password" id="cpw-user-new" placeholder="New password" autocomplete="new-password"></div>
+          <div class="field"><label class="field-label">Confirm</label><input type="password" id="cpw-user-confirm" placeholder="Confirm" autocomplete="new-password"></div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:8px;padding:5px 14px;font-size:11px;" onclick="doChangePassword('user')">Update User Password</button>
+        <div id="cpw-user-msg" style="font-size:11px;margin-top:6px;min-height:16px;"></div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-light);margin-bottom:10px;">Admin PIN <span style="font-weight:400;text-transform:none;">(4–8 digits)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="field"><label class="field-label">New PIN</label><input type="password" id="cpw-pin-new" placeholder="e.g. 1234" maxlength="8" autocomplete="new-password"></div>
+          <div class="field"><label class="field-label">Confirm</label><input type="password" id="cpw-pin-confirm" placeholder="Confirm" maxlength="8" autocomplete="new-password"></div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:8px;padding:5px 14px;font-size:11px;" onclick="doChangePassword('pin')">Update PIN</button>
+        <div id="cpw-pin-msg" style="font-size:11px;margin-top:6px;min-height:16px;"></div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="document.getElementById('changepw-modal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────
+//  Q2 MACHINES — Job Card v2
+//  Improvements: dark mode, unsaved-changes guard,
+//  auto-draft, duplicate, dashboard, delete, audit
+//  trail, profit indicator, cost warning, scroll hints,
+//  status confirm, security hardening notes
+// ─────────────────────────────────────────────────
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhCrntgPGSr9hpTEf1mXEMd5oHTic-K-tEyYHh05Qf5Fnafl38jZo2FMzjA6VhTrnDzA/exec';
+
+
+// ── AUTH — credentials live server-side in Script Properties ─────
+// No passwords or PIN are stored here. All auth is backend-only.
+const CACHE_TTL  = 86400000;
+
+let currentRole   = null;
+let currentUser   = null;
+let sessionToken  = null;
+let CONFIG        = { labour:[], equipment:[], tasks:[], materials:[], consumables:[], qcChecklists:[] };
+let adminUnlocked = false;
+let adminUnlockTarget = null;
+let isLocked      = false;
+let isDirty       = false;
+let searchTimeout = null;
+let autoSaveTimer = null;
+let offlineQueue  = JSON.parse(localStorage.getItem('q2_offline_queue') || '[]');
+let auditLog      = [];
+let dashData      = [];
+let dashSortKey   = 'Job No';
+let dashSortAsc   = false;
+let confirmResolve = null;
+let confirmReject  = null;
+
+// ── DARK MODE ────────────────────────────────────
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const on = document.body.classList.contains('dark');
+  document.getElementById('dark-btn').textContent = on ? '☀️' : '🌙';
+  localStorage.setItem('q2_dark', on ? '1' : '');
+}
+function applyDark() {
+  if (localStorage.getItem('q2_dark')) {
+    document.body.classList.add('dark');
+    document.getElementById('dark-btn').textContent = '☀️';
+  }
+}
+
+// ── DIRTY / UNSAVED ──────────────────────────────
+function markDirty() {
+  if (isDirty) return;
+  isDirty = true;
+  document.getElementById('draft-dot').classList.add('show');
+  document.getElementById('unsaved-banner').classList.add('show');
+  scheduleDraftSave();
+}
+function markClean() {
+  isDirty = false;
+  document.getElementById('draft-dot').classList.remove('show');
+  document.getElementById('unsaved-banner').classList.remove('show');
+}
+function scheduleDraftSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveDraft, 60000); // 60s auto-draft
+}
+function saveDraft() {
+  try {
+    const data = collectFormData();
+    localStorage.setItem('q2_draft', JSON.stringify({ data, ts: Date.now() }));
+  } catch(e) {}
+}
+function restoreDraft() {
+  try {
+    const raw = localStorage.getItem('q2_draft');
+    if (!raw) return false;
+    const { data, ts } = JSON.parse(raw);
+    const age = Date.now() - ts;
+    if (age > 24 * 3600 * 1000) { localStorage.removeItem('q2_draft'); return false; }
+    return { data, ts };
+  } catch(e) { return false; }
+}
+function clearDraft() {
+  localStorage.removeItem('q2_draft');
+}
+// Attach dirty listeners after DOM builds
+function attachDirtyListeners() {
+  document.querySelectorAll('.main-wrap input, .main-wrap select, .main-wrap textarea').forEach(el => {
+    el.addEventListener('input', markDirty);
+    el.addEventListener('change', markDirty);
+  });
+}
+window.addEventListener('beforeunload', e => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ── CONFIRM DIALOG ───────────────────────────────
+function showConfirm(title, msg, okLabel='Confirm', danger=false) {
+  return new Promise((res, rej) => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent   = msg;
+    const okBtn = document.getElementById('confirm-ok-btn');
+    okBtn.textContent = okLabel;
+    okBtn.className   = danger ? 'btn btn-danger' : 'btn btn-primary';
+    confirmResolve = res;
+    confirmReject  = rej;
+    document.getElementById('confirm-modal').classList.add('show');
+  });
+}
+
+// ── LOGIN ────────────────────────────────────────
+function togglePw() {
+  const inp = document.getElementById('login-password');
+  const btn = document.getElementById('pw-toggle-btn');
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  const sz = 'width="16" height="16" style="width:16px;height:16px;flex-shrink:0;display:block;"';
+  btn.innerHTML = show
+    ? '<svg xmlns="http://www.w3.org/2000/svg" '+sz+' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" '+sz+' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  inp.focus();
+}
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const loginBtn = document.getElementById('login-btn');
+  const loginBox = document.getElementById('login-box');
+
+  if (!username || !password) { errEl.textContent = 'Please enter your username and password.'; return; }
+
+  errEl.textContent = '';
+  loginBtn.classList.add('loading');
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', username, password })
+    });
+    const data = await resp.json();
+
+    if (data.success) {
+      currentRole  = data.role;
+      currentUser  = data.username;
+      sessionToken = data.token;
+      sessionStorage.setItem('q2_token',   sessionToken);
+      sessionStorage.setItem('q2_role',    currentRole);
+      sessionStorage.setItem('q2_user',    currentUser);
+      sessionStorage.setItem('q2_expires', data.expires);
+      document.getElementById('login-overlay').classList.add('hidden');
+      applyRole(currentRole, currentUser);
+      await initApp();
+    } else {
+      errEl.textContent = data.error || 'Incorrect username or password.';
+      document.getElementById('login-password').value = '';
+      // Shake animation
+      loginBox.classList.remove('shake');
+      void loginBox.offsetWidth; // reflow
+      loginBox.classList.add('shake');
+      setTimeout(() => loginBox.classList.remove('shake'), 500);
+      document.getElementById('login-password').focus();
+    }
+  } catch(e) {
+    errEl.textContent = 'Could not reach server. Check your connection.';
+    loginBox.classList.remove('shake');
+    void loginBox.offsetWidth;
+    loginBox.classList.add('shake');
+    setTimeout(() => loginBox.classList.remove('shake'), 500);
+  } finally {
+    loginBtn.classList.remove('loading');
+  }
+}
+function doLogout() {
+  if (isDirty && !confirm('You have unsaved changes. Sign out anyway?')) return;
+  sessionStorage.removeItem('q2_token');
+  sessionStorage.removeItem('q2_role');
+  sessionStorage.removeItem('q2_user');
+  sessionStorage.removeItem('q2_expires');
+  currentRole = currentUser = sessionToken = null;
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-username').focus();
+}
+// Attach token to every API call
+function apiHeaders() { return {}; } // fetch uses body/query params, not headers
+function withToken(params) { return { ...params, token: sessionToken }; }
+function applyRole(role, username) {
+  const badge = document.getElementById('role-badge');
+  badge.textContent = role === 'admin' ? '★ Admin' : '● ' + username;
+  badge.className   = 'login-role-badge ' + role;
+  if (role !== 'admin') {
+    const unlockBtn = document.getElementById('cost-unlock-btn');
+    if (unlockBtn) unlockBtn.style.display = 'none';
+  }
+  document.getElementById('delete-job-btn').style.display = role === 'admin' ? 'inline-flex' : 'none';
+  const cpBtn = document.getElementById('change-pw-btn');
+  if (cpBtn) cpBtn.style.display = role === 'admin' ? 'inline-flex' : 'none';
+}
+
+// ── INIT ─────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  applyDark();
+  const savedToken   = sessionStorage.getItem('q2_token');
+  const savedRole    = sessionStorage.getItem('q2_role');
+  const savedUser    = sessionStorage.getItem('q2_user');
+  const savedExpires = parseInt(sessionStorage.getItem('q2_expires') || '0');
+
+  if (savedToken && savedRole && savedUser && Date.now() < savedExpires) {
+    currentRole  = savedRole;
+    currentUser  = savedUser;
+    sessionToken = savedToken;
+    document.getElementById('login-overlay').classList.add('hidden');
+    applyRole(currentRole, currentUser);
+    await initApp();
+  } else {
+    // Clear any stale session
+    sessionStorage.clear();
+    setTimeout(() => document.getElementById('login-username').focus(), 100);
+  }
+});
+
+async function initApp() {
+  updateOfflineBanner();
+  await loadConfig();
+  // Check for unrestored draft
+  const draft = restoreDraft();
+  if (draft) {
+    const age = Math.round((Date.now() - draft.ts) / 60000);
+    if (confirm(`A draft was found (${age} min ago). Restore it?`)) {
+      await newJobCard(true);
+      loadJobFromRow(draft.data);
+      markDirty();
+      showToast('Draft restored.', 'warn');
+    } else {
+      clearDraft();
+      await newJobCard(true);
+    }
+  } else {
+    await newJobCard(true);
+  }
+  setInterval(syncOfflineQueue, 30000);
+  setInterval(saveDraft, 120000); // background draft every 2min
+}
+
+window.addEventListener('online',  () => { updateOfflineBanner(); syncOfflineQueue(); });
+window.addEventListener('offline', () => { updateOfflineBanner(); });
+
+// ── SESSION EXPIRY HANDLER ────────────────────────
+function handleUnauthorised() {
+  showToast('Your session has expired. Please sign in again.', 'warn');
+  setTimeout(() => doLogout(), 1500);
+}
+function checkAuthResponse(data) {
+  if (data && data.code === 401) { handleUnauthorised(); return false; }
+  return true;
+}
+async function loadConfig() {
+  const cached = localStorage.getItem('q2_config');
+  const ts     = localStorage.getItem('q2_config_ts');
+  if (cached && ts && (Date.now() - parseInt(ts)) < CACHE_TTL) { CONFIG = JSON.parse(cached); return; }
+  if (!navigator.onLine) return;
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=getConfig&token=' + encodeURIComponent(sessionToken));
+    const data = await resp.json();
+    if (!checkAuthResponse(data)) return;
+    if (data.labour) {
+      CONFIG = data;
+      localStorage.setItem('q2_config', JSON.stringify(CONFIG));
+      localStorage.setItem('q2_config_ts', Date.now().toString());
+    }
+  } catch(e) { console.warn('Config load failed', e); }
+}
+
+// ── JOB NUMBER ────────────────────────────────────
+async function fetchNewJobNo() {
+  if (!navigator.onLine) return localJobNo();
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=newJobNo&token=' + encodeURIComponent(sessionToken));
+    const d = await r.json();
+    return d.jobNo || localJobNo();
+  } catch(e) { return localJobNo(); }
+}
+function localJobNo() {
+  const n = parseInt(localStorage.getItem('q2_local_counter') || '0') + 1;
+  localStorage.setItem('q2_local_counter', n.toString());
+  return 'JC-' + String(n).padStart(4,'0') + '-L';
+}
+function getJobId() { return document.getElementById('job-id-display').textContent; }
+
+// ── STATUS ────────────────────────────────────────
+function setStatus(btn) {
+  document.querySelectorAll('#status-btns .status-btn').forEach(b => b.classList.remove('active','green','red','blue','dark'));
+  btn.classList.add('active');
+  if (btn.dataset.color) btn.classList.add(btn.dataset.color);
+  const s = btn.textContent.trim();
+  addAuditEntry('status', `Status changed to "${s}"`);
+  setLocked(['Invoiced','Closed'].includes(s));
+  markDirty();
+}
+async function confirmLockStatus(btn, label) {
+  try {
+    await showConfirm(`Set Status: ${label}`, `This will lock the job card and require Admin PIN to make changes. Continue?`, `Set ${label}`, true);
+    setStatus(btn);
+  } catch(e) { /* cancelled */ }
+}
+function setLocked(lock) {
+  isLocked = lock;
+  document.getElementById('lock-banner').classList.toggle('show', lock);
+  if (lock && !adminUnlocked) document.body.classList.add('readonly');
+  else document.body.classList.remove('readonly');
+}
+function setCategory(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (cat === 'internal') {
+    document.getElementById('f-customer').value = 'Q2 Machines';
+    document.getElementById('f-contact').value  = '';
+    document.getElementById('f-email').value    = 'q2hub@q2m.io';
+    document.getElementById('f-phone').value    = '(868) 230-9702';
+  }
+}
+function onJobTypeChange() {
+  const jt = document.getElementById('f-job-type').value;
+  if (jt.startsWith('Internal')) setCategory('internal', document.getElementById('cat-internal'));
+  buildQCChecklist(jt);
+}
+
+// ── ADMIN UNLOCK ──────────────────────────────────
+function promptAdminUnlock(target) {
+  adminUnlockTarget = target || 'job';
+  document.getElementById('admin-pin-input').value = '';
+  document.getElementById('admin-pin-error').textContent = '';
+  document.getElementById('admin-modal').classList.add('show');
+  setTimeout(() => document.getElementById('admin-pin-input').focus(), 100);
+}
+async function verifyAdminPin() {
+  const pin    = document.getElementById('admin-pin-input').value;
+  const errEl  = document.getElementById('admin-pin-error');
+  const okBtn  = document.querySelector('#admin-modal .btn-primary');
+  if (!pin) { errEl.textContent = 'Please enter the PIN.'; return; }
+
+  okBtn.textContent = 'Checking…'; okBtn.disabled = true;
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(withToken({ action: 'verifyPin', pin }))
+    });
+    const data = await resp.json();
+    if (data.success) {
+      adminUnlocked = true;
+      document.getElementById('admin-modal').classList.remove('show');
+      addAuditEntry('unlock', 'Admin PIN verified — elevated access granted');
+      if (adminUnlockTarget === 'cost') {
+        document.getElementById('admin-cost-fields').classList.add('unlocked');
+        document.getElementById('cost-unlock-btn').textContent = 'Unlocked ✓';
+        document.getElementById('cost-unlock-btn').classList.add('unlocked');
+      } else {
+        setLocked(false);
+      }
+      showToast('Admin access granted — session only.', 'success');
+    } else {
+      errEl.textContent = data.error || 'Incorrect PIN. Try again.';
+      document.getElementById('admin-pin-input').value = '';
+      document.getElementById('admin-pin-input').focus();
+    }
+  } catch(e) {
+    errEl.textContent = 'Server error. Try again.';
+  } finally {
+    okBtn.textContent = 'Unlock'; okBtn.disabled = false;
+  }
+}
+
+// ── AUDIT TRAIL ───────────────────────────────────
+function addAuditEntry(type, text) {
+  const entry = { type, text, user: currentUser || 'unknown', ts: new Date().toISOString() };
+  auditLog.push(entry);
+  renderAuditList();
+}
+function renderAuditList() {
+  const list = document.getElementById('audit-list');
+  const badge = document.getElementById('audit-badge');
+  badge.textContent = auditLog.length + ' ' + (auditLog.length === 1 ? 'entry' : 'entries');
+  if (!auditLog.length) { list.innerHTML = '<p class="audit-empty">No activity recorded yet for this job.</p>'; return; }
+  list.innerHTML = [...auditLog].reverse().map(e => {
+    const d = new Date(e.ts);
+    const time = d.toLocaleTimeString('en-TT', {hour:'2-digit',minute:'2-digit'}) + ' ' + d.toLocaleDateString('en-TT',{day:'2-digit',month:'short'});
+    return `<div class="audit-entry ${e.type}"><span class="audit-time">${time}</span><span class="audit-text"><span class="audit-user">${e.user}</span> — ${e.text}</span></div>`;
+  }).join('');
+}
+function clearAuditLog() { auditLog = []; renderAuditList(); }
+
+// ── QC CHECKLIST ──────────────────────────────────
+function buildQCChecklist(jobType) {
+  const grid = document.getElementById('qc-grid');
+  grid.innerHTML = '';
+  const items = CONFIG.qcChecklists
+    .filter(r => !jobType || r['Job Type'] === jobType || r['Job Type'] === 'All')
+    .map(r => r['Checklist Item']).filter(Boolean);
+  if (!items.length) {
+    grid.innerHTML = '<p style="color:var(--ink-light);font-size:12px;padding:8px 0;grid-column:span 3;">No checklist items configured for this job type.</p>'; return;
+  }
+  items.forEach(item => {
+    const div = document.createElement('div'); div.className = 'qc-item';
+    const chk = document.createElement('div'); chk.className = 'qc-check';
+    chk.onclick = () => {
+      if (!chk.classList.contains('checked') && !chk.classList.contains('failed')) { chk.classList.add('checked'); chk.textContent = '✓'; }
+      else if (chk.classList.contains('checked')) { chk.classList.remove('checked'); chk.classList.add('failed'); chk.textContent = '✗'; }
+      else { chk.classList.remove('failed'); chk.textContent = ''; }
+      markDirty();
+    };
+    const txt = document.createElement('span'); txt.className = 'qc-text'; txt.textContent = item;
+    div.appendChild(chk); div.appendChild(txt);
+    grid.appendChild(div);
+  });
+}
+
+// ── LABOUR ────────────────────────────────────────
+function addLabourRow(d) {
+  const tbody = document.getElementById('labour-body');
+  const rid = 'lr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const classOpts = CONFIG.labour.map(r => `<option value="${r['Classification']}">${r['Classification']}</option>`).join('');
+  const taskOpts  = CONFIG.tasks.map(r => `<option value="${r['Task Name']}">${r['Task Name']}</option>`).join('');
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onLabourClassChange(this,'${rid}')">${classOpts ? '<option value="">Select...</option>'+classOpts : '<option value="">No classifications loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Technician name" value="${d&&d.tech||''}"></td>
+    <td><select onchange="onLabourLocationChange(this,'${rid}')">
+      <option value="Workshop">Workshop</option><option value="Onsite">Onsite</option><option value="Other">Other</option>
+    </select></td>
+    <td><input type="time" class="num" value="${d&&d.start||''}" onchange="calcLabourHours('${rid}')"></td>
+    <td><input type="time" class="num" value="${d&&d.end||''}" onchange="calcLabourHours('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.hrs||''}" step="0.25" oninput="updateLabourRow('${rid}')" style="width:56px;"></td>
+    <td><span class="ot-badge" id="${rid}-type" style="display:none;">OT</span><span id="${rid}-typelabel">Reg</span></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-rate" value="${d&&d.rate||''}" oninput="updateLabourRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="removeLabourRow('${rid}')">✕</button></td>`;
+  tbody.appendChild(tr);
+  const taskTr = document.createElement('tr'); taskTr.className = 'task-subrows'; taskTr.id = rid+'-tasks';
+  taskTr.innerHTML = `<td colspan="11"><div id="${rid}-taskcontainer"></div><button class="btn-add-task" onclick="addTaskSubRow('${rid}-taskcontainer','${taskOpts}')">+ Add Task</button></td>`;
+  tbody.appendChild(taskTr);
+  const locSel = tr.querySelectorAll('select')[1];
+  if (d && d.location) locSel.value = d.location;
+  if (d && d.classification) { tr.querySelectorAll('select')[0].value = d.classification; onLabourClassChange(tr.querySelectorAll('select')[0], rid); }
+  if (d && d.tasks) d.tasks.forEach(t => addTaskSubRow(rid+'-taskcontainer', taskOpts, t));
+  updateLabourRow(rid); updateLabourTotals();
+}
+function addTaskSubRow(containerId, taskOpts, d) {
+  const c = document.getElementById(containerId); if (!c) return;
+  const div = document.createElement('div'); div.className = 'task-subrow-inner';
+  div.innerHTML = `<span class="task-subrow-label">Task:</span>
+    <select class="task-subrow" style="min-width:160px;">${taskOpts ? '<option value="">Select task...</option>'+taskOpts : '<option>No tasks loaded</option>'}</select>
+    <span class="task-subrow-label" style="margin-left:8px;">Note:</span>
+    <input type="text" class="task-subrow" placeholder="Optional note" style="flex:1;">
+    <button class="btn-del" onclick="this.parentElement.remove()" style="font-size:12px;">✕</button>`;
+  if (d) { div.querySelectorAll('select')[0].value = d.task||''; div.querySelectorAll('input')[0].value = d.note||''; }
+  c.appendChild(div);
+}
+function onLabourClassChange(sel, rid) {
+  const cls = sel.value;
+  const locSel = document.getElementById(rid).querySelectorAll('select')[1];
+  const loc = locSel.value;
+  const rateInput = document.getElementById(rid+'-rate');
+  const row = CONFIG.labour.find(r => r['Classification'] === cls);
+  if (row) {
+    const rate = loc === 'Workshop' ? (row['Workshop Rate (TTD/hr)']||row['Workshop Rate TTD']||0) : (row['Onsite Rate (TTD/hr)']||row['Onsite Rate TTD']||0);
+    rateInput.value = parseFloat(rate).toFixed(2);
+  }
+  updateLabourRow(rid);
+}
+function onLabourLocationChange(sel, rid) { onLabourClassChange(document.getElementById(rid).querySelectorAll('select')[0], rid); }
+function calcLabourHours(rid) {
+  const tr = document.getElementById(rid);
+  const inputs = tr.querySelectorAll('input[type="time"]');
+  const start = inputs[0].value, end = inputs[1].value;
+  if (!start || !end) return;
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  let hrs = (eh*60+em - sh*60-sm) / 60;
+  if (hrs < 0) hrs += 24;
+  tr.querySelectorAll('input[type="number"]')[0].value = hrs.toFixed(2);
+  updateLabourRow(rid);
+}
+function updateLabourRow(rid) {
+  const tr = document.getElementById(rid); if (!tr) return;
+  const hrs  = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value) || 0;
+  const rate = parseFloat(document.getElementById(rid+'-rate').value) || 0;
+  const isOT = hrs > 8;
+  const badge = document.getElementById(rid+'-type'), label = document.getElementById(rid+'-typelabel');
+  let amount = isOT ? (8*rate + (hrs-8)*rate*1.5) : (hrs*rate);
+  badge.style.display = isOT ? 'inline' : 'none';
+  label.textContent = isOT ? 'OT' : 'Reg';
+  tr.classList.toggle('ot-row', isOT);
+  document.getElementById(rid+'-amount').textContent = '$' + amount.toFixed(2);
+  updateLabourTotals(); updateCostSummary();
+}
+function removeLabourRow(rid) {
+  document.getElementById(rid)?.remove(); document.getElementById(rid+'-tasks')?.remove();
+  updateLabourTotals(); updateCostSummary();
+}
+function updateLabourTotals() {
+  let totalHrs = 0, totalCost = 0;
+  document.querySelectorAll('#labour-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id; if (!rid||!rid.startsWith('lr-')) return;
+    totalHrs  += parseFloat(tr.querySelectorAll('input[type="number"]')[0]?.value) || 0;
+    totalCost += parseFloat(document.getElementById(rid+'-amount')?.textContent.replace('$','')) || 0;
+  });
+  document.getElementById('labour-hrs-total').textContent = totalHrs.toFixed(2);
+  document.getElementById('labour-cost-total').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('labour-hrs-badge').textContent  = totalHrs.toFixed(2) + ' hrs';
+}
+
+// ── EQUIPMENT ─────────────────────────────────────
+function addEquipRow(d) {
+  const tbody = document.getElementById('equip-body');
+  const rid = 'er-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const equipOpts = CONFIG.equipment.map(r => `<option value="${r['Equipment Name']}">${r['Equipment Name']}</option>`).join('');
+  const taskOpts  = CONFIG.tasks.map(r => `<option value="${r['Task Name']}">${r['Task Name']}</option>`).join('');
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onEquipChange(this,'${rid}')">${equipOpts ? '<option value="">Select...</option>'+equipOpts : '<option value="">No equipment loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Asset No." value="${d&&d.asset||''}"></td>
+    <td><select onchange="onEquipChange(document.getElementById('${rid}').querySelectorAll('select')[0],'${rid}')">
+      <option value="Workshop">Workshop</option><option value="Onsite">Onsite</option><option value="Other">Other</option>
+    </select></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.setup||''}" step="0.25" oninput="updateEquipRow('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" value="${d&&d.run||''}" step="0.25" oninput="updateEquipRow('${rid}')"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-rate" value="${d&&d.rate||''}" oninput="updateEquipRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="removeEquipRow('${rid}')">✕</button></td>`;
+  tbody.appendChild(tr);
+  const taskTr = document.createElement('tr'); taskTr.className = 'task-subrows'; taskTr.id = rid+'-tasks';
+  taskTr.innerHTML = `<td colspan="9"><div id="${rid}-taskcontainer"></div><button class="btn-add-task" onclick="addTaskSubRow('${rid}-taskcontainer','${taskOpts}')">+ Add Task</button></td>`;
+  tbody.appendChild(taskTr);
+  if (d && d.machine) { tr.querySelectorAll('select')[0].value = d.machine; onEquipChange(tr.querySelectorAll('select')[0], rid); }
+  if (d && d.location) tr.querySelectorAll('select')[1].value = d.location;
+  if (d && d.tasks) d.tasks.forEach(t => addTaskSubRow(rid+'-taskcontainer', taskOpts, t));
+  updateEquipRow(rid);
+}
+function onEquipChange(sel, rid) {
+  const name = sel.value, tr = document.getElementById(rid);
+  const loc = tr.querySelectorAll('select')[1].value;
+  const row = CONFIG.equipment.find(r => r['Equipment Name'] === name);
+  if (row) {
+    const rate = loc === 'Workshop' ? (row['Workshop Rate (TTD/hr)']||row['Workshop Rate TTD']||0) : (row['Onsite Rate (TTD/hr)']||row['Onsite Rate TTD']||0);
+    document.getElementById(rid+'-rate').value = parseFloat(rate).toFixed(2);
+  }
+  updateEquipRow(rid);
+}
+function updateEquipRow(rid) {
+  const tr = document.getElementById(rid); if (!tr) return;
+  const nums = tr.querySelectorAll('input[type="number"]');
+  const amt = ((parseFloat(nums[0].value)||0) + (parseFloat(nums[1].value)||0)) * (parseFloat(document.getElementById(rid+'-rate').value)||0);
+  document.getElementById(rid+'-amount').textContent = '$' + amt.toFixed(2);
+  updateEquipTotals(); updateCostSummary();
+}
+function removeEquipRow(rid) {
+  document.getElementById(rid)?.remove(); document.getElementById(rid+'-tasks')?.remove();
+  updateEquipTotals(); updateCostSummary();
+}
+function updateEquipTotals() {
+  let total = 0;
+  document.querySelectorAll('#equip-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id; if (!rid||!rid.startsWith('er-')) return;
+    total += parseFloat(document.getElementById(rid+'-amount')?.textContent.replace('$','')) || 0;
+  });
+  document.getElementById('equip-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── MATERIALS ─────────────────────────────────────
+function addMaterialRow(d) {
+  const tbody = document.getElementById('materials-body');
+  const rid = 'mr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const matOpts = CONFIG.materials.map(r => `<option value="${r['Item Name']}" data-unit="${r['Unit']||''}" data-cost="${r['Default Unit Cost (TTD)']||r['Default Unit Cost TTD']||0}">${r['Item Name']}</option>`).join('');
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onMaterialChange(this,'${rid}')">${matOpts ? '<option value="">Select or type...</option>'+matOpts : '<option value="">No materials loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Stock code" value="${d&&d.code||''}"></td>
+    <td><input type="number" class="num" placeholder="0" value="${d&&d.qty||''}" step="1" oninput="updateMaterialRow('${rid}')"></td>
+    <td><input type="text" placeholder="Unit" id="${rid}-unit" value="${d&&d.unit||''}" style="width:60px;"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.unitCost||''}" oninput="updateMaterialRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateMatTotals();updateCostSummary();">✕</button></td>`;
+  tbody.appendChild(tr);
+  if (d && d.desc) tr.querySelectorAll('select')[0].value = d.desc;
+  updateMaterialRow(rid);
+}
+function onMaterialChange(sel, rid) {
+  const opt = sel.options[sel.selectedIndex];
+  if (opt) { document.getElementById(rid+'-unit').value = opt.dataset.unit||''; document.getElementById(rid+'-cost').value = parseFloat(opt.dataset.cost||0).toFixed(2); }
+  updateMaterialRow(rid);
+}
+function updateMaterialRow(rid) {
+  const tr = document.getElementById(rid); if (!tr) return;
+  const qty = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value)||0;
+  const cost = parseFloat(document.getElementById(rid+'-cost').value)||0;
+  document.getElementById(rid+'-amount').textContent = '$' + (qty*cost).toFixed(2);
+  updateMatTotals(); updateCostSummary();
+}
+function updateMatTotals() {
+  let total = 0;
+  document.querySelectorAll('#materials-body tr').forEach(tr => {
+    if (!tr.id) return; total += parseFloat(document.getElementById(tr.id+'-amount')?.textContent.replace('$',''))||0;
+  });
+  document.getElementById('materials-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── CONSUMABLES ───────────────────────────────────
+function addConsumableRow(d) {
+  const tbody = document.getElementById('consumables-body');
+  const rid = 'cr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const conOpts = CONFIG.consumables.map(r => `<option value="${r['Item Name']}" data-unit="${r['Unit']||''}" data-cost="${r['Default Unit Cost (TTD)']||r['Default Unit Cost TTD']||0}">${r['Item Name']}</option>`).join('');
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><select onchange="onConsumableChange(this,'${rid}')">${conOpts ? '<option value="">Select...</option>'+conOpts : '<option value="">No consumables loaded</option>'}</select></td>
+    <td><input type="text" placeholder="Category" value="${d&&d.cat||''}"></td>
+    <td><input type="number" class="num" placeholder="0" value="${d&&d.qty||''}" step="1" oninput="updateConsumableRow('${rid}')"></td>
+    <td><input type="text" placeholder="Unit" id="${rid}-unit" value="${d&&d.unit||''}" style="width:60px;"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.unitCost||''}" oninput="updateConsumableRow('${rid}')"></td>
+    <td><span class="row-total" id="${rid}-amount">$0.00</span></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateConTotals();updateCostSummary();">✕</button></td>`;
+  tbody.appendChild(tr);
+  if (d && d.desc) tr.querySelectorAll('select')[0].value = d.desc;
+  updateConsumableRow(rid);
+}
+function onConsumableChange(sel, rid) {
+  const opt = sel.options[sel.selectedIndex];
+  if (opt) { document.getElementById(rid+'-unit').value = opt.dataset.unit||''; document.getElementById(rid+'-cost').value = parseFloat(opt.dataset.cost||0).toFixed(2); }
+  updateConsumableRow(rid);
+}
+function updateConsumableRow(rid) {
+  const tr = document.getElementById(rid); if (!tr) return;
+  const qty = parseFloat(tr.querySelectorAll('input[type="number"]')[0].value)||0;
+  const cost = parseFloat(document.getElementById(rid+'-cost').value)||0;
+  document.getElementById(rid+'-amount').textContent = '$' + (qty*cost).toFixed(2);
+  updateConTotals(); updateCostSummary();
+}
+function updateConTotals() {
+  let total = 0;
+  document.querySelectorAll('#consumables-body tr').forEach(tr => {
+    if (!tr.id) return; total += parseFloat(document.getElementById(tr.id+'-amount')?.textContent.replace('$',''))||0;
+  });
+  document.getElementById('consumables-cost-total').textContent = '$' + total.toFixed(2);
+}
+
+// ── SUB-CONTRACTORS ───────────────────────────────
+function addSubRow(d) {
+  const tbody = document.getElementById('subs-body');
+  const rid = 'sr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="date" value="${d&&d.date||''}"></td>
+    <td><input type="text" placeholder="Sub-contractor / Supplier" value="${d&&d.name||''}"></td>
+    <td><input type="text" placeholder="Work / service description" value="${d&&d.service||''}"></td>
+    <td><input type="text" placeholder="Invoice / Ref No." value="${d&&d.inv||''}"></td>
+    <td><input type="number" class="num" placeholder="0.00" id="${rid}-cost" value="${d&&d.cost||''}" oninput="updateSubTotals()"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();updateSubTotals();updateCostSummary();">✕</button></td>`;
+  tbody.appendChild(tr); updateSubTotals();
+}
+function updateSubTotals() {
+  let total = 0;
+  document.querySelectorAll('#subs-body tr').forEach(tr => {
+    if (!tr.id) return; total += parseFloat(document.getElementById(tr.id+'-cost')?.value)||0;
+  });
+  document.getElementById('subs-cost-total').textContent = '$' + total.toFixed(2);
+  updateCostSummary();
+}
+
+// ── DRAWINGS / SPECS / REPORTS ────────────────────
+function addDrawingRow(d) {
+  const rid = 'dr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="DWG-001" value="${d&&d['Drawing No']||''}"></td>
+    <td><input type="text" placeholder="Drawing title" value="${d&&d['Drawing Title']||''}"></td>
+    <td><input type="text" placeholder="Rev A" value="${d&&d['Revision No']||''}"></td>
+    <td><input type="date" value="${d&&d['Date']||''}"></td>
+    <td><select><option value="Client">Client</option><option value="Internal">Internal</option></select></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">✕</button></td>`;
+  if (d && d['Source']) tr.querySelectorAll('select')[0].value = d['Source'];
+  document.getElementById('drawings-body').appendChild(tr);
+}
+function addSpecRow(d) {
+  const rid = 'sp-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="SPEC-001" value="${d&&d['Spec No']||''}"></td>
+    <td><input type="text" placeholder="Spec title / description" value="${d&&d['Spec Title']||''}"></td>
+    <td><input type="text" placeholder="Rev 1" value="${d&&d['Revision No']||''}"></td>
+    <td><input type="date" value="${d&&d['Date Received']||''}"></td>
+    <td><input type="text" placeholder="Client" value="${d&&d['Source']||'Client'}" style="width:80px;"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">✕</button></td>`;
+  document.getElementById('specs-body').appendChild(tr);
+}
+function addReportRow(d) {
+  const rid = 'rr-' + Date.now() + Math.random().toString(36).substr(2,4);
+  const tr = document.createElement('tr'); tr.id = rid;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="RPT-0001" value="${d&&d.ref||''}"></td>
+    <td><input type="text" placeholder="Report title" value="${d&&d.title||''}"></td>
+    <td><button class="btn-del" onclick="document.getElementById('${rid}').remove();">✕</button></td>`;
+  document.getElementById('reports-body').appendChild(tr);
+}
+
+// ── COSTING SUMMARY & PROFIT INDICATOR ────────────
+function syncQuoted(src) {
+  const v = src.value;
+  document.getElementById(src.id === 'f-quoted' ? 'f-quoted-2' : 'f-quoted').value = v;
+  updateCostSummary();
+}
+function updateCostSummary() {
+  const labour      = parseFloat(document.getElementById('labour-cost-total').textContent.replace('$',''))||0;
+  const equip       = parseFloat(document.getElementById('equip-cost-total').textContent.replace('$',''))||0;
+  const materials   = parseFloat(document.getElementById('materials-cost-total').textContent.replace('$',''))||0;
+  const consumables = parseFloat(document.getElementById('consumables-cost-total').textContent.replace('$',''))||0;
+  const subs        = parseFloat(document.getElementById('subs-cost-total').textContent.replace('$',''))||0;
+  const misc        = parseFloat(document.getElementById('cs-misc').value)||0;
+  const total = labour + equip + materials + consumables + subs + misc;
+
+  document.getElementById('cs-labour').textContent      = '$' + labour.toFixed(2);
+  document.getElementById('cs-equip').textContent       = '$' + equip.toFixed(2);
+  document.getElementById('cs-materials').textContent   = '$' + materials.toFixed(2);
+  document.getElementById('cs-consumables').textContent = '$' + consumables.toFixed(2);
+  document.getElementById('cs-subs').textContent        = '$' + subs.toFixed(2);
+  document.getElementById('cs-total').textContent       = '$' + total.toFixed(2);
+
+  // Markup / profit
+  const markup  = parseFloat(document.getElementById('markup-pct').value)||0;
+  const selling = total * (1 + markup/100);
+  const profit  = selling - total;
+  document.getElementById('selling-price').value = selling.toFixed(2);
+  document.getElementById('gross-profit').value  = profit.toFixed(2);
+
+  // Profit indicator
+  const pi = document.getElementById('profit-indicator');
+  if (markup <= 0) {
+    pi.className = 'profit-indicator neutral'; pi.textContent = '— Enter markup to see margin';
+  } else if (markup >= 20) {
+    pi.className = 'profit-indicator healthy'; pi.textContent = `✓ Healthy margin: ${markup}% markup — $${profit.toFixed(2)} gross profit`;
+  } else if (markup >= 10) {
+    pi.className = 'profit-indicator warn'; pi.textContent = `⚡ Low margin: ${markup}% markup — $${profit.toFixed(2)} gross profit`;
+  } else {
+    pi.className = 'profit-indicator danger'; pi.textContent = `⚠ Very low margin: ${markup}% markup — $${profit.toFixed(2)} gross profit`;
+  }
+
+  // Cost vs Quoted warnings
+  const quoted = parseFloat(document.getElementById('f-quoted-2').value)||0;
+  const overEl = document.getElementById('cost-over-warning');
+  const nearEl = document.getElementById('cost-near-warning');
+  if (quoted > 0 && total > quoted) {
+    overEl.classList.add('show'); nearEl.classList.remove('show');
+    overEl.textContent = `⚠ Job cost ($${total.toFixed(2)}) exceeds quoted amount ($${quoted.toFixed(2)}) by $${(total-quoted).toFixed(2)}!`;
+  } else if (quoted > 0 && total >= quoted * 0.85) {
+    nearEl.classList.add('show'); overEl.classList.remove('show');
+    const pct = Math.round((total/quoted)*100);
+    nearEl.textContent = `⚡ Job cost is ${pct}% of quoted amount — approaching the limit.`;
+  } else {
+    overEl.classList.remove('show'); nearEl.classList.remove('show');
+  }
+}
+
+// ── COLLECT FORM DATA ─────────────────────────────
+function collectFormData() {
+  const get = id => { const el = document.getElementById(id); return el ? el.tagName === 'DIV' ? el.textContent : el.value : ''; };
+  const getStatus = () => { const b = document.querySelector('#status-btns .status-btn.active'); return b ? b.textContent.trim() : 'Received'; };
+  const getCat    = () => document.getElementById('cat-internal').classList.contains('active') ? 'Internal' : 'Customer';
+  const labourDetail = [];
+  document.querySelectorAll('#labour-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id; if (!rid||!rid.startsWith('lr-')) return;
+    const inputs = tr.querySelectorAll('input'), selects = tr.querySelectorAll('select'), tasks = [];
+    const tc = document.getElementById(rid+'-taskcontainer');
+    if (tc) tc.querySelectorAll('.task-subrow-inner').forEach(div => tasks.push({ task: div.querySelector('select')?.value||'', note: div.querySelector('input')?.value||'' }));
+    labourDetail.push({ date:inputs[0].value, classification:selects[0].value, tech:inputs[1].value, location:selects[1].value, start:inputs[2].value, end:inputs[3].value, hrs:inputs[4].value, rate:document.getElementById(rid+'-rate').value, amount:document.getElementById(rid+'-amount').textContent.replace('$',''), tasks });
+  });
+  const equipDetail = [];
+  document.querySelectorAll('#equip-body tr:not(.task-subrows)').forEach(tr => {
+    const rid = tr.id; if (!rid||!rid.startsWith('er-')) return;
+    const inputs = tr.querySelectorAll('input'), selects = tr.querySelectorAll('select'), tasks = [];
+    const tc = document.getElementById(rid+'-taskcontainer');
+    if (tc) tc.querySelectorAll('.task-subrow-inner').forEach(div => tasks.push({ task: div.querySelector('select')?.value||'', note: div.querySelector('input')?.value||'' }));
+    equipDetail.push({ date:inputs[0].value, machine:selects[0].value, asset:inputs[1].value, location:selects[1].value, setup:inputs[2].value, run:inputs[3].value, rate:document.getElementById(rid+'-rate').value, amount:document.getElementById(rid+'-amount').textContent.replace('$',''), tasks });
+  });
+  const materialsDetail = [];
+  document.querySelectorAll('#materials-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    materialsDetail.push({ date:inputs[0].value, desc:tr.querySelector('select')?.value||'', code:inputs[1].value, qty:inputs[2].value, unit:document.getElementById(tr.id+'-unit').value, unitCost:document.getElementById(tr.id+'-cost').value });
+  });
+  const consumablesDetail = [];
+  document.querySelectorAll('#consumables-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    consumablesDetail.push({ date:inputs[0].value, desc:tr.querySelector('select')?.value||'', cat:inputs[1].value, qty:inputs[2].value, unit:document.getElementById(tr.id+'-unit').value, unitCost:document.getElementById(tr.id+'-cost').value });
+  });
+  const subsDetail = [];
+  document.querySelectorAll('#subs-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    subsDetail.push({ date:inputs[0].value, name:inputs[1].value, service:inputs[2].value, inv:inputs[3].value, cost:document.getElementById(tr.id+'-cost').value });
+  });
+  const drawingsDetail = [];
+  document.querySelectorAll('#drawings-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    drawingsDetail.push({ 'Drawing No':inputs[0].value, 'Drawing Title':inputs[1].value, 'Revision No':inputs[2].value, 'Date':inputs[3].value, 'Source':tr.querySelector('select')?.value||'Client' });
+  });
+  const specsDetail = [];
+  document.querySelectorAll('#specs-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    specsDetail.push({ 'Spec No':inputs[0].value, 'Spec Title':inputs[1].value, 'Revision No':inputs[2].value, 'Date Received':inputs[3].value, 'Source':inputs[4].value });
+  });
+  const reportsDetail = [];
+  document.querySelectorAll('#reports-body tr').forEach(tr => {
+    if (!tr.id) return;
+    const inputs = tr.querySelectorAll('input');
+    reportsDetail.push({ ref:inputs[0].value, title:inputs[1].value });
+  });
+  const qcState = [];
+  document.querySelectorAll('#qc-grid .qc-item').forEach(item => {
+    const chk = item.querySelector('.qc-check'), txt = item.querySelector('.qc-text');
+    if (chk && txt) qcState.push({ item:txt.textContent, state:chk.classList.contains('checked')?'pass':chk.classList.contains('failed')?'fail':'' });
+  });
+  return {
+    'Job No':           document.getElementById('job-id-display').textContent,
+    'Job Category':     getCat(),
+    'Job Type':         get('f-job-type'),
+    'Status':           getStatus(),
+    'Priority':         get('priority-select'),
+    'Customer':         get('f-customer'),
+    'Contact':          get('f-contact'),
+    'Phone':            get('f-phone'),
+    'Email':            get('f-email'),
+    'Date Received':    get('f-date-received'),
+    'Due Date':         get('f-due-date'),
+    'Description':      get('f-description'),
+    'Part Name':        get('f-part-name'),
+    'Drawing No':       '',
+    'Customer PO':      get('f-cust-po'),
+    'Quoted TTD':       get('f-quoted'),
+    'Accepted By':      get('f-accepted-by'),
+    'Payment Terms':    get('f-payment-terms'),
+    'Labour Detail':    JSON.stringify(labourDetail),
+    'Equipment Detail': JSON.stringify(equipDetail),
+    'Materials Detail': JSON.stringify(materialsDetail),
+    'Consumables Detail': JSON.stringify(consumablesDetail),
+    'Subs Detail':      JSON.stringify(subsDetail),
+    'Drawings Detail':  JSON.stringify(drawingsDetail),
+    'Specs Detail':     JSON.stringify(specsDetail),
+    'JSA Ref':          get('f-jsa-ref'),
+    'JSA Title':        get('f-jsa-title'),
+    'JSA Date Issued':  get('f-jsa-date'),
+    'JSA Issued By':    get('f-jsa-by'),
+    'Misc TTD':         get('cs-misc'),
+    'Quoted TTD 2':     get('f-quoted-2'),
+    'Costing Notes':    get('f-costing-notes'),
+    'Date Completed':   get('f-date-completed'),
+    'Inspected By':     get('f-inspected-by'),
+    'QC Result':        get('f-qc-result'),
+    'QC Notes':         get('f-qc-notes'),
+    'QC State':         JSON.stringify(qcState),
+    'Reports Detail':   JSON.stringify(reportsDetail),
+    'Modified By':      get('f-modified-by') || currentUser || 'Unknown',
+    'Last Saved':       new Date().toISOString(),
+  };
+}
+
+// ── SAVE TO SHEETS ────────────────────────────────
+async function submitToSheets() {
+  if (isLocked && !adminUnlocked) { showToast('Job is locked. Use Admin Unlock to make changes.', 'error'); return; }
+  const data = collectFormData();
+  showToast('Saving to Google Sheets...', 'loading');
+  if (!navigator.onLine) {
+    offlineQueue.push({ data, ts: Date.now() });
+    localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+    updateOfflineBanner(); showToast('Saved offline. Will sync when connection restores.', 'warn'); return;
+  }
+  try {
+    const resp   = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(withToken({ action:'saveJob', data })) });
+    const result = await resp.json();
+    if (result.status === 'ok') {
+      const now = new Date().toLocaleString('en-TT');
+      document.getElementById('last-saved-display').textContent = 'Saved ' + now;
+      if (result.jobNo) document.getElementById('job-id-display').textContent = result.jobNo;
+      markClean();
+      clearDraft();
+      addAuditEntry('save', `Saved to Google Sheets as ${data['Job No']}`);
+      showToast('✓ Job saved to Google Sheets.', 'success');
+    } else { throw new Error(result.error || 'Unknown error'); }
+  } catch(e) {
+    offlineQueue.push({ data, ts: Date.now() });
+    localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+    showToast('Save failed — queued for retry. ' + e.message, 'warn');
+    updateOfflineBanner();
+  }
+}
+async function syncOfflineQueue() {
+  if (!navigator.onLine || offlineQueue.length === 0) return;
+  const queue = [...offlineQueue]; offlineQueue = []; localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+  for (const item of queue) {
+    try {
+      const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(withToken({ action:'saveJob', data:item.data })) });
+      const result = await resp.json();
+      if (result.status !== 'ok') throw new Error(result.error);
+    } catch(e) { offlineQueue.push(item); }
+  }
+  localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+  updateOfflineBanner();
+  if (queue.length > offlineQueue.length) showToast('✓ Offline jobs synced to Sheets.', 'success');
+}
+
+// ── LOAD JOB ──────────────────────────────────────
+function loadJobFromRow(row) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v||''; };
+  document.getElementById('job-id-display').textContent = row['Job No'] || '';
+  document.querySelectorAll('#status-btns .status-btn').forEach(btn => {
+    btn.classList.remove('active','green','red','blue','dark');
+    if (btn.textContent.trim() === row['Status']) { btn.classList.add('active'); if (btn.dataset.color) btn.classList.add(btn.dataset.color); }
+  });
+  const isCat = row['Job Category'] === 'Internal' ? 'internal' : 'customer';
+  setCategory(isCat, document.getElementById('cat-'+isCat));
+  const ps = document.getElementById('priority-select'); if (ps) ps.value = row['Priority']||'Normal';
+  set('f-customer',row['Customer']); set('f-contact',row['Contact']); set('f-phone',row['Phone']); set('f-email',row['Email']);
+  set('f-date-received',row['Date Received']); set('f-due-date',row['Due Date']); set('f-description',row['Description']);
+  set('f-part-name',row['Part Name']); set('f-job-type',row['Job Type']); set('f-cust-po',row['Customer PO']);
+  set('f-quoted',row['Quoted TTD']); set('f-quoted-2',row['Quoted TTD 2']||row['Quoted TTD']);
+  set('f-accepted-by',row['Accepted By']); set('f-payment-terms',row['Payment Terms']);
+  set('f-costing-notes',row['Costing Notes']); set('cs-misc',row['Misc TTD']||'0');
+  set('f-date-completed',row['Date Completed']); set('f-inspected-by',row['Inspected By']);
+  set('f-qc-result',row['QC Result']); set('f-qc-notes',row['QC Notes']);
+  set('f-jsa-ref',row['JSA Ref']); set('f-jsa-title',row['JSA Title']); set('f-jsa-date',row['JSA Date Issued']); set('f-jsa-by',row['JSA Issued By']);
+  set('markup-pct','0');
+  if (row['Last Saved']) document.getElementById('last-saved-display').textContent = 'Saved ' + new Date(row['Last Saved']).toLocaleString('en-TT');
+  ['labour-body','equip-body','materials-body','consumables-body','subs-body','drawings-body','specs-body','reports-body'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  const parse = str => { try { return JSON.parse(str)||[]; } catch(e) { return []; } };
+  parse(row['Labour Detail']).forEach(d => addLabourRow(d));
+  parse(row['Equipment Detail']).forEach(d => addEquipRow(d));
+  parse(row['Materials Detail']).forEach(d => addMaterialRow(d));
+  parse(row['Consumables Detail']).forEach(d => addConsumableRow(d));
+  parse(row['Subs Detail']).forEach(d => addSubRow(d));
+  parse(row['Drawings Detail']).forEach(d => addDrawingRow(d));
+  parse(row['Specs Detail']).forEach(d => addSpecRow(d));
+  parse(row['Reports Detail']).forEach(d => addReportRow(d));
+  onJobTypeChange();
+  if (row['QC State']) {
+    const qs = parse(row['QC State']);
+    document.querySelectorAll('#qc-grid .qc-item').forEach((item, i) => {
+      const chk = item.querySelector('.qc-check');
+      if (qs[i]) { chk.classList.remove('checked','failed'); chk.textContent = ''; if (qs[i].state==='pass'){chk.classList.add('checked');chk.textContent='✓';} else if(qs[i].state==='fail'){chk.classList.add('failed');chk.textContent='✗';} }
+    });
+  }
+  setLocked(['Invoiced','Closed'].includes(row['Status']));
+  clearAuditLog();
+  addAuditEntry('save', `Job ${row['Job No']} loaded`);
+  updateCostSummary();
+  markClean();
+  showToast('✓ Job ' + row['Job No'] + ' loaded.', 'success');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ── NEW JOB ───────────────────────────────────────
+async function safeNewJobCard() {
+  if (isDirty) {
+    try { await showConfirm('Unsaved Changes', 'You have unsaved changes. Start a new job card anyway?', 'Discard & New', true); }
+    catch(e) { return; }
+  }
+  await newJobCard(true);
+}
+async function newJobCard(skipConfirm) {
+  document.querySelectorAll('.field input,.field select,.field textarea').forEach(el => { if (el.type !== 'checkbox') el.value = ''; });
+  document.getElementById('cs-misc').value = '0';
+  document.getElementById('markup-pct').value = '0';
+  ['labour-body','equip-body','materials-body','consumables-body','subs-body','drawings-body','specs-body','reports-body'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  document.querySelectorAll('#status-btns .status-btn').forEach(b => b.classList.remove('active','green','red','blue','dark'));
+  document.querySelector('#status-btns .status-btn').classList.add('active');
+  document.getElementById('f-date-received').valueAsDate = new Date();
+  document.getElementById('last-saved-display').textContent = 'Not yet saved';
+  adminUnlocked = false;
+  document.getElementById('admin-cost-fields').classList.remove('unlocked');
+  document.getElementById('cost-unlock-btn').textContent = 'Unlock';
+  document.getElementById('cost-unlock-btn').classList.remove('unlocked');
+  setLocked(false);
+  setCategory('customer', document.getElementById('cat-customer'));
+  buildQCChecklist('');
+  addLabourRow(); addEquipRow(); addMaterialRow(); addConsumableRow(); addSubRow();
+  updateCostSummary();
+  clearAuditLog();
+  clearDraft();
+  markClean();
+  const jobNo = await fetchNewJobNo();
+  document.getElementById('job-id-display').textContent = jobNo;
+  attachDirtyListeners();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ── DUPLICATE JOB ─────────────────────────────────
+async function duplicateJob() {
+  if (isDirty) {
+    try { await showConfirm('Unsaved Changes', 'Save the current job first, or duplicate without saving?', 'Duplicate Anyway'); }
+    catch(e) { return; }
+  }
+  const original = collectFormData();
+  const newJobNo = await fetchNewJobNo();
+  // Clear and load the duplicate
+  await newJobCard(true);
+  // Restore all data except job number, status, dates
+  const parse = str => { try { return JSON.parse(str)||[]; } catch(e) { return []; } };
+  document.getElementById('job-id-display').textContent = newJobNo;
+  document.getElementById('f-customer').value     = original['Customer'] || '';
+  document.getElementById('f-contact').value      = original['Contact'] || '';
+  document.getElementById('f-phone').value        = original['Phone'] || '';
+  document.getElementById('f-email').value        = original['Email'] || '';
+  document.getElementById('f-description').value  = original['Description'] || '';
+  document.getElementById('f-part-name').value    = original['Part Name'] || '';
+  document.getElementById('f-job-type').value     = original['Job Type'] || '';
+  document.getElementById('f-cust-po').value      = '';
+  document.getElementById('f-quoted').value       = original['Quoted TTD'] || '';
+  document.getElementById('f-quoted-2').value     = original['Quoted TTD 2'] || '';
+  document.getElementById('f-accepted-by').value  = original['Accepted By'] || '';
+  document.getElementById('f-payment-terms').value= original['Payment Terms'] || '';
+  document.getElementById('f-jsa-title').value    = original['JSA Title'] || '';
+  document.getElementById('f-jsa-by').value       = original['JSA Issued By'] || '';
+  const ps = document.getElementById('priority-select');
+  if (ps && original['Priority']) ps.value = original['Priority'];
+  ['labour-body','equip-body','materials-body','consumables-body','subs-body','drawings-body','specs-body','reports-body'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  parse(original['Labour Detail']).forEach(d => addLabourRow(d));
+  parse(original['Equipment Detail']).forEach(d => addEquipRow(d));
+  parse(original['Materials Detail']).forEach(d => addMaterialRow(d));
+  parse(original['Consumables Detail']).forEach(d => addConsumableRow(d));
+  parse(original['Subs Detail']).forEach(d => addSubRow(d));
+  parse(original['Drawings Detail']).forEach(d => addDrawingRow(d));
+  parse(original['Specs Detail']).forEach(d => addSpecRow(d));
+  onJobTypeChange();
+  updateCostSummary();
+  clearAuditLog();
+  addAuditEntry('save', `Duplicated from ${original['Job No']}`);
+  markDirty();
+  showToast('✓ Job duplicated as ' + newJobNo + '. Review and save.', 'success');
+}
+
+// ── DELETE JOB ────────────────────────────────────
+async function deleteJob() {
+  if (currentRole !== 'admin') { showToast('Admin access required to delete jobs.', 'error'); return; }
+  const jobNo = getJobId();
+  if (!jobNo) { showToast('No job loaded.', 'error'); return; }
+  try {
+    await showConfirm('Delete Job', `Permanently delete job ${jobNo}? This cannot be undone.`, 'Delete', true);
+  } catch(e) { return; }
+  if (!navigator.onLine) { showToast('Cannot delete while offline.', 'error'); return; }
+  showToast('Deleting...', 'loading');
+  try {
+    const resp   = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(withToken({ action:'deleteJob', jobNo })) });
+    const result = await resp.json();
+    if (result.status === 'ok') {
+      addAuditEntry('delete', `Job ${jobNo} deleted by ${currentUser}`);
+      showToast('✓ Job ' + jobNo + ' deleted.', 'success');
+      await newJobCard(true);
+    } else { throw new Error(result.error || 'Delete failed'); }
+  } catch(e) { showToast('Delete failed: ' + e.message, 'error'); }
+}
+
+// ── SEARCH ────────────────────────────────────────
+function searchJobs() { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 350); }
+async function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  const type = document.getElementById('search-type').value;
+  const box  = document.getElementById('search-results-box');
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  if (!navigator.onLine) { showToast('Search requires internet connection.', 'warn'); return; }
+  box.style.display = 'block'; box.innerHTML = '<div class="search-empty">Searching...</div>';
+  positionSearchBox();
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?action=search&q=${encodeURIComponent(q)}&type=${type}&token=${encodeURIComponent(sessionToken)}`);
+    const data = await resp.json();
+    if (!data.results || !data.results.length) { box.innerHTML = '<div class="search-empty">No matching jobs found.</div>'; return; }
+    box.innerHTML = '';
+    data.results.forEach(row => {
+      const div = document.createElement('div'); div.className = 'search-result-item';
+      div.innerHTML = `<div class="sri-jobno">${row['Job No']||''}</div><div class="sri-customer">${row['Customer']||''}</div><div class="sri-meta">${row['Job Type']||''} · ${row['Status']||''} · Due: ${row['Due Date']||'—'}</div>`;
+      div.onclick = () => { loadJobFromRow(row); box.style.display = 'none'; document.getElementById('search-input').value = ''; };
+      box.appendChild(div);
+    });
+  } catch(e) { box.innerHTML = '<div class="search-empty">Error fetching results.</div>'; }
+}
+function positionSearchBox() {
+  const inp = document.getElementById('search-input');
+  const box = document.getElementById('search-results-box');
+  const r = inp.getBoundingClientRect();
+  box.style.top = (r.bottom + 4) + 'px'; box.style.left = r.left + 'px'; box.style.width = Math.max(r.width, 320) + 'px';
+}
+function hideSearchAfterDelay() { setTimeout(() => { document.getElementById('search-results-box').style.display = 'none'; }, 300); }
+
+// ── DASHBOARD ─────────────────────────────────────
+async function openDashboard() {
+  document.getElementById('dashboard-overlay').classList.add('show');
+  await loadDashboard();
+}
+function closeDashboard() { document.getElementById('dashboard-overlay').classList.remove('show'); }
+async function loadDashboard() {
+  document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="dash-empty">Loading jobs...</td></tr>';
+  document.getElementById('dash-stats').innerHTML = '';
+  if (!navigator.onLine) { document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="dash-empty">Offline — cannot load job list.</td></tr>'; return; }
+  try {
+    const resp = await fetch(SCRIPT_URL + '?action=getAllJobs&token=' + encodeURIComponent(sessionToken));
+    const data = await resp.json();
+    dashData = data.jobs || [];
+    renderDashStats();
+    renderDashTable();
+  } catch(e) { document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="dash-empty">Failed to load jobs. Check your connection.</td></tr>'; }
+}
+function renderDashStats() {
+  const counts = { Total: dashData.length };
+  ['Received','In Progress','On Hold','Completed','Invoiced'].forEach(s => { counts[s] = dashData.filter(r => r['Status'] === s).length; });
+  const html = Object.entries(counts).map(([k,v]) => `<div class="dash-stat"><div class="dash-stat-num">${v}</div><div class="dash-stat-label">${k}</div></div>`).join('');
+  document.getElementById('dash-stats').innerHTML = html;
+}
+function dashSort(key) {
+  if (dashSortKey === key) dashSortAsc = !dashSortAsc; else { dashSortKey = key; dashSortAsc = true; }
+  document.querySelectorAll('.dash-table th').forEach(th => th.classList.remove('sorted'));
+  renderDashTable();
+}
+function renderDashTable() {
+  const q      = document.getElementById('dash-search').value.toLowerCase();
+  const status = document.getElementById('dash-status-filter').value;
+  const prio   = document.getElementById('dash-priority-filter').value;
+  let rows = dashData.filter(r => {
+    if (status && r['Status'] !== status) return false;
+    if (prio && r['Priority'] !== prio) return false;
+    if (q && !JSON.stringify(r).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  rows.sort((a, b) => {
+    const av = (a[dashSortKey]||'').toString().toLowerCase();
+    const bv = (b[dashSortKey]||'').toString().toLowerCase();
+    return dashSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  const statusPill = s => {
+    const map = { 'Received':'sp-received','In Progress':'sp-progress','On Hold':'sp-hold','Completed':'sp-completed','Invoiced':'sp-invoiced','Closed':'sp-closed' };
+    return `<span class="status-pill ${map[s]||'sp-received'}">${s}</span>`;
+  };
+  const prioBadge = p => {
+    const col = { Urgent:'var(--red)', Rush:'var(--amber)', Normal:'var(--ink-light)', Scheduled:'var(--blue)' };
+    return `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:${col[p]||col.Normal}">${p||'—'}</span>`;
+  };
+  if (!rows.length) { document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="dash-empty">No jobs match the current filters.</td></tr>'; return; }
+  document.getElementById('dash-tbody').innerHTML = rows.map(r => `
+    <tr onclick="dashLoadJob(${JSON.stringify(JSON.stringify(r))})">
+      <td class="dash-jno">${r['Job No']||''}</td>
+      <td class="dash-cust">${r['Customer']||'—'}</td>
+      <td>${r['Job Type']||'—'}</td>
+      <td>${statusPill(r['Status']||'')}</td>
+      <td>${prioBadge(r['Priority'])}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:11px;">${r['Date Received']||'—'}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:11px;">${r['Due Date']||'—'}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r['Description']||'—'}</td>
+    </tr>`).join('');
+}
+function dashLoadJob(jsonStr) {
+  try {
+    const row = JSON.parse(jsonStr);
+    closeDashboard();
+    loadJobFromRow(row);
+  } catch(e) { showToast('Error loading job.', 'error'); }
+}
+
+// ── OFFLINE ───────────────────────────────────────
+function updateOfflineBanner() {
+  const banner = document.getElementById('offline-banner');
+  const badge  = document.getElementById('sync-count');
+  if (!navigator.onLine) {
+    banner.classList.add('show');
+    if (offlineQueue.length > 0) { badge.style.display = 'inline'; badge.textContent = offlineQueue.length + ' pending'; }
+  } else { banner.classList.remove('show'); }
+}
+
+// ── TOAST ─────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast'), m = document.getElementById('toast-msg');
+  m.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), type === 'loading' ? 30000 : 4000);
+}
+
+// ── CHANGE PASSWORD / PIN ─────────────────────────
+function openChangePw() {
+  // Clear all fields and messages
+  ['admin','user','pin'].forEach(t => {
+    const newEl  = document.getElementById('cpw-'+t+'-new');
+    const conEl  = document.getElementById('cpw-'+t+'-confirm');
+    const msgEl  = document.getElementById('cpw-'+t+'-msg');
+    if (newEl)  newEl.value  = '';
+    if (conEl)  conEl.value  = '';
+    if (msgEl)  { msgEl.textContent = ''; msgEl.style.color = ''; }
+  });
+  document.getElementById('changepw-modal').classList.add('show');
+}
+async function doChangePassword(target) {
+  const newVal  = document.getElementById('cpw-'+target+'-new').value;
+  const confirm = document.getElementById('cpw-'+target+'-confirm').value;
+  const msgEl   = document.getElementById('cpw-'+target+'-msg');
+
+  msgEl.style.color = 'var(--red)';
+  if (!newVal)            { msgEl.textContent = 'Please enter a new value.'; return; }
+  if (newVal !== confirm) { msgEl.textContent = 'Values do not match.'; return; }
+  if (target !== 'pin' && newVal.length < 6) { msgEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (target === 'pin' && !/^\d{4,8}$/.test(newVal)) { msgEl.textContent = 'PIN must be 4–8 digits only.'; return; }
+
+  msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--ink-light)';
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(withToken({ action: 'changePassword', target, newPassword: newVal }))
+    });
+    const data = await resp.json();
+    if (!checkAuthResponse(data)) return;
+    if (data.success) {
+      msgEl.style.color   = 'var(--green)';
+      msgEl.textContent   = '✓ ' + data.message;
+      document.getElementById('cpw-'+target+'-new').value     = '';
+      document.getElementById('cpw-'+target+'-confirm').value = '';
+      addAuditEntry('unlock', `${target} credential updated by ${currentUser}`);
+    } else {
+      msgEl.style.color = 'var(--red)';
+      msgEl.textContent = data.error || 'Update failed.';
+    }
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Could not reach server.';
+  }
+}
+
+</script>
+</body>
+</html>
