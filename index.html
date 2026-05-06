@@ -2438,6 +2438,10 @@ async function submitSuggestion() {
     payload[f.k] = f.type === 'number' ? (parseFloat(el.value) || 0) : el.value.trim();
   }
   try {
+    const nameKey = cfg.fields[0].k;
+    const nameVal = payload[nameKey];
+    const { data: existing } = await sb.from(cfg.table).select('id').eq(nameKey, nameVal).eq('status', 'approved').limit(1);
+    if (existing && existing.length) { showToast(`⚠ "${nameVal}" already exists in ${cfg.label}.`, 'warn'); return; }
     const { error } = await sb.from(cfg.table).insert(payload);
     if (error) throw error;
     closeSuggestModal();
