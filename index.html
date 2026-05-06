@@ -1283,9 +1283,52 @@ function applyRole(role, username) {
   if (delBtn) delBtn.style.display = role === 'admin' ? 'inline-flex' : 'none';
 }
 
-// ── CONFIG (Phase 6)
+// ── CONFIG
 async function loadConfig() {
   CONFIG = { labour:[], equipment:[], tasks:[], materials:[], consumables:[], qcChecklists:[] };
+  try {
+    const [labRes, eqRes, matRes, conRes, taskRes, qcRes] = await Promise.all([
+      sb.from('config_labour').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+      sb.from('config_equipment').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+      sb.from('config_materials').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+      sb.from('config_consumables').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+      sb.from('config_tasks').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+      sb.from('config_qc_checklists').select('*').eq('status','approved').eq('is_active',true).order('sort_order'),
+    ]);
+    CONFIG.labour       = (labRes.data  ||[]).map(r => ({'Classification':r.classification,'Workshop Rate (TTD/hr)':r.workshop_rate_ttd,'Onsite Rate (TTD/hr)':r.onsite_rate_ttd}));
+    CONFIG.equipment    = (eqRes.data   ||[]).map(r => ({'Equipment Name':r.equipment_name,'Asset No':r.asset_no,'Workshop Rate (TTD/hr)':r.workshop_rate_ttd,'Onsite Rate (TTD/hr)':r.onsite_rate_ttd}));
+    CONFIG.materials    = (matRes.data  ||[]).map(r => ({'Item Name':r.item_name,'Unit':r.unit,'Default Unit Cost (TTD)':r.default_unit_cost_ttd}));
+    CONFIG.consumables  = (conRes.data  ||[]).map(r => ({'Item Name':r.item_name,'Unit':r.unit,'Default Unit Cost (TTD)':r.default_unit_cost_ttd}));
+    CONFIG.tasks        = (taskRes.data ||[]).map(r => ({'Task Name':r.task_name}));
+    CONFIG.qcChecklists = (qcRes.data   ||[]).map(r => ({'Checklist Item':r.checklist_item,'Job Type':r.job_type||'All'}));
+    refreshExistingRowDropdowns();
+  } catch(e) { console.error('loadConfig:', e); }
+}
+
+function refreshExistingRowDropdowns() {
+  const labourOpts  = '<option value="">— Select —</option>' + CONFIG.labour.map(r => `<option value="${r['Classification']}">${r['Classification']}</option>`).join('');
+  const equipOpts   = '<option value="">— Select —</option>' + CONFIG.equipment.map(r => `<option value="${r['Equipment Name']}">${r['Equipment Name']}</option>`).join('');
+  const taskOpts    = '<option value="">— Select —</option>' + CONFIG.tasks.map(r => `<option value="${r['Task Name']}">${r['Task Name']}</option>`).join('');
+  const matOpts     = '<option value="">— Select —</option>' + CONFIG.materials.map(r => `<option value="${r['Item Name']}">${r['Item Name']}</option>`).join('');
+  const conOpts     = '<option value="">— Select —</option>' + CONFIG.consumables.map(r => `<option value="${r['Item Name']}">${r['Item Name']}</option>`).join('');
+  document.querySelectorAll('#labour-body tr:not(.task-subrows)').forEach(tr => {
+    const sels = tr.querySelectorAll('select'); if (!sels[0]) return;
+    const cur = sels[0].value; sels[0].innerHTML = labourOpts; sels[0].value = cur;
+    tr.querySelectorAll('.task-subrow-inner select').forEach(s => { const c=s.value; s.innerHTML=taskOpts; s.value=c; });
+  });
+  document.querySelectorAll('#equip-body tr:not(.task-subrows)').forEach(tr => {
+    const sels = tr.querySelectorAll('select'); if (!sels[0]) return;
+    const cur = sels[0].value; sels[0].innerHTML = equipOpts; sels[0].value = cur;
+    tr.querySelectorAll('.task-subrow-inner select').forEach(s => { const c=s.value; s.innerHTML=taskOpts; s.value=c; });
+  });
+  document.querySelectorAll('#materials-body tr').forEach(tr => {
+    const sel = tr.querySelector('select'); if (!sel) return;
+    const cur = sel.value; sel.innerHTML = matOpts; sel.value = cur;
+  });
+  document.querySelectorAll('#consumables-body tr').forEach(tr => {
+    const sel = tr.querySelector('select'); if (!sel) return;
+    const cur = sel.value; sel.innerHTML = conOpts; sel.value = cur;
+  });
 }
 
 // ── JOB NUMBER
