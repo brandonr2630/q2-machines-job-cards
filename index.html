@@ -1311,22 +1311,191 @@ async function verifyAdminPin() {
   } finally { okBtn.textContent = 'Unlock'; okBtn.disabled = false; }
 }
 
-// ── SAVE (Phase 2)
-async function saveJob() { showToast('⚠ Save coming in Phase 2.', 'warn'); }
+// ── SAVE CORE (used by saveJob and syncOfflineQueue)
+async function saveJobData(data, jobId) {
+  const parse = str => { try { return JSON.parse(str) || []; } catch(e) { return []; } };
+  const jobRecord = {
+    job_no:          data['Job No'],
+    job_category:    data['Job Category'],
+    job_type:        data['Job Type'] || null,
+    status:          data['Status'],
+    priority:        data['Priority'],
+    customer:        data['Customer'] || null,
+    contact:         data['Contact'] || null,
+    phone:           data['Phone'] || null,
+    email:           data['Email'] || null,
+    date_received:   data['Date Received'] || null,
+    due_date:        data['Due Date'] || null,
+    description:     data['Description'] || null,
+    part_name:       data['Part Name'] || null,
+    customer_po:     data['Customer PO'] || null,
+    accepted_by:     data['Accepted By'] || null,
+    modified_by:     data['Modified By'] || currentUser || null,
+    quoted_ttd:      data['Quoted TTD'] ? parseFloat(data['Quoted TTD']) : null,
+    payment_terms:   data['Payment Terms'] || null,
+    misc_ttd:        data['Misc TTD'] ? parseFloat(data['Misc TTD']) : 0,
+    costing_notes:   data['Costing Notes'] || null,
+    jsa_ref:         data['JSA Ref'] || null,
+    jsa_title:       data['JSA Title'] || null,
+    jsa_date_issued: data['JSA Date Issued'] || null,
+    jsa_issued_by:   data['JSA Issued By'] || null,
+    date_completed:  data['Date Completed'] || null,
+    inspected_by:    data['Inspected By'] || null,
+    qc_result:       data['QC Result'] || null,
+    qc_notes:        data['QC Notes'] || null,
+    qc_state:        parse(data['QC State']),
+    drawings:        parse(data['Drawings Detail']),
+    specs:           parse(data['Specs Detail']),
+    reports:         parse(data['Reports Detail']),
+    created_by:      currentUserId,
+  };
+  let savedId = jobId;
+  if (savedId) {
+    const { error } = await sb.from('jobs').update(jobRecord).eq('id', savedId);
+    if (error) throw error;
+  } else {
+    const { data: ins, error } = await sb.from('jobs').insert(jobRecord).select('id').single();
+    if (error) throw error;
+    savedId = ins.id;
+  }
+  for (const tbl of ['labour_entries','equipment_entries','material_entries','consumable_entries','subcontractor_entries']) {
+    const { error } = await sb.from(tbl).delete().eq('job_id', savedId);
+    if (error) throw error;
+  }
+  const labour = parse(data['Labour Detail']);
+  if (labour.length) {
+    const { error } = await sb.from('labour_entries').insert(labour.map((r,i) => ({
+      job_id: savedId, sort_order: i,
+      entry_date: r.date || null, classification: r.classification || null,
+      technician: r.tech || null, location: r.location || 'Workshop',
+      start_time: r.start || null, end_time: r.end || null,
+      hours: parseFloat(r.hrs) || 0, rate_ttd: parseFloat(r.rate) || 0,
+      amount_ttd: parseFloat(r.amount) || 0, is_overtime: false, tasks: r.tasks || [],
+    })));
+    if (error) throw error;
+  }
+  const equip = parse(data['Equipment Detail']);
+  if (equip.length) {
+    const { error } = await sb.from('equipment_entries').insert(equip.map((r,i) => ({
+      job_id: savedId, sort_order: i,
+      entry_date: r.date || null, machine_name: r.machine || null,
+      asset_no: r.asset || null, location: r.location || 'Workshop',
+      setup_hours: parseFloat(r.setup) || 0, run_hours: parseFloat(r.run) || 0,
+      rate_ttd: parseFloat(r.rate) || 0, amount_ttd: parseFloat(r.amount) || 0, tasks: r.tasks || [],
+    })));
+    if (error) throw error;
+  }
+  const mats = parse(data['Materials Detail']);
+  if (mats.length) {
+    const { error } = await sb.from('material_entries').insert(mats.map((r,i) => ({
+      job_id: savedId, sort_order: i,
+      entry_date: r.date || null, description: r.desc || null,
+      stock_code: r.code || null, quantity: parseFloat(r.qty) || 0,
+      unit: r.unit || null, unit_cost_ttd: parseFloat(r.unitCost) || 0,
+      total_cost_ttd: (parseFloat(r.qty) || 0) * (parseFloat(r.unitCost) || 0),
+    })));
+    if (error) throw error;
+  }
+  const cons = parse(data['Consumables Detail']);
+  if (cons.length) {
+    const { error } = await sb.from('consumable_entries').insert(cons.map((r,i) => ({
+      job_id: savedId, sort_order: i,
+      entry_date: r.date || null, description: r.desc || null,
+      category: r.cat || null, quantity: parseFloat(r.qty) || 0,
+      unit: r.unit || null, unit_cost_ttd: parseFloat(r.unitCost) || 0,
+      total_cost_ttd: (parseFloat(r.qty) || 0) * (parseFloat(r.unitCost) || 0),
+    })));
+    if (error) throw error;
+  }
+  const subs = parse(data['Subs Detail']);
+  if (subs.length) {
+    const { error } = await sb.from('subcontractor_entries').insert(subs.map((r,i) => ({
+      job_id: savedId, sort_order: i,
+      entry_date: r.date || null, name: r.name || null,
+      service_description: r.service || null, invoice_ref: r.inv || null,
+      cost_ttd: parseFloat(r.cost) || 0,
+    })));
+    if (error) throw error;
+  }
+  await sb.from('audit_log').insert({
+    job_id: savedId, job_no: data['Job No'],
+    user_id: currentUserId, username: currentUser,
+    action_type: 'job_saved',
+    description: `Job ${data['Job No']} saved by ${currentUser}`,
+  });
+  return savedId;
+}
+
+// ── SAVE
+async function saveJob() {
+  if (!currentUserId) { showToast('⚠ Not logged in.', 'warn'); return; }
+  const data = collectFormData();
+  if (!navigator.onLine) {
+    offlineQueue.push({ action: 'save', data, jobId: currentJobId, ts: Date.now() });
+    localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+    showToast('📴 Saved offline — will sync when connected.', 'warn');
+    markClean();
+    return;
+  }
+  try {
+    showToast('Saving…', 'info');
+    currentJobId = await saveJobData(data, currentJobId);
+    document.getElementById('last-saved-display').textContent = 'Saved ' + new Date().toLocaleString('en-TT');
+    const delBtn = document.getElementById('delete-job-btn');
+    if (delBtn) delBtn.style.display = '';
+    clearDraft();
+    markClean();
+    showToast('✓ Job ' + data['Job No'] + ' saved.', 'success');
+  } catch(err) {
+    console.error('saveJob:', err);
+    showToast('✗ Save failed: ' + (err.message || err), 'error');
+  }
+}
 async function submitToSheets() { await saveJob(); }
 
-// ── DELETE (Phase 3)
-async function deleteJob() { showToast('⚠ Delete coming in Phase 3.', 'warn'); }
+// ── DELETE
+async function deleteJob() {
+  if (!currentJobId) { showToast('⚠ No saved job to delete.', 'warn'); return; }
+  try { await showConfirm('Delete Job', 'Permanently delete this job card? This cannot be undone.', 'Delete', true); }
+  catch(e) { return; }
+  try {
+    const jobNo = document.getElementById('job-id-display').textContent;
+    await sb.from('audit_log').insert({ job_id: currentJobId, job_no: jobNo, user_id: currentUserId, username: currentUser, action_type: 'job_deleted', description: `Job ${jobNo} deleted by ${currentUser}` });
+    const { error } = await sb.from('jobs').delete().eq('id', currentJobId);
+    if (error) throw error;
+    currentJobId = null;
+    await newJobCard(true);
+    showToast('🗑 Job ' + jobNo + ' deleted.', 'success');
+  } catch(err) {
+    showToast('✗ Delete failed: ' + (err.message || err), 'error');
+  }
+}
 
-// ── SEARCH (Phase 3)
+// ── SEARCH
 function searchJobs() { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 350); }
 async function doSearch() {
   const q = document.getElementById('search-input').value.trim();
   const box = document.getElementById('search-results-box');
   if (q.length < 2) { box.style.display = 'none'; return; }
   box.style.display = 'block';
-  box.innerHTML = '<div class="search-empty">⚠ Search coming in Phase 3.</div>';
+  box.innerHTML = '<div class="search-empty">Searching…</div>';
   positionSearchBox();
+  try {
+    const { data, error } = await sb.from('jobs')
+      .select('id, job_no, customer, status, priority, part_name, date_received')
+      .or(`job_no.ilike.%${q}%,customer.ilike.%${q}%,description.ilike.%${q}%,part_name.ilike.%${q}%`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || !data.length) { box.innerHTML = '<div class="search-empty">No results found.</div>'; return; }
+    box.innerHTML = data.map(j => `<div class="search-result-item" onmousedown="loadSavedJob('${j.id}')">
+      <span class="search-job-no">${j.job_no}</span>
+      <span class="search-customer">${j.customer || '—'}</span>
+      <span class="search-status">${j.status}</span>
+    </div>`).join('');
+  } catch(err) {
+    box.innerHTML = `<div class="search-empty">Search error: ${err.message}</div>`;
+  }
 }
 function positionSearchBox() {
   const inp = document.getElementById('search-input');
@@ -1336,6 +1505,60 @@ function positionSearchBox() {
   box.style.width = Math.max(r.width, 320) + 'px';
 }
 function hideSearchAfterDelay() { setTimeout(() => { document.getElementById('search-results-box').style.display = 'none'; }, 300); }
+
+// ── LOAD SAVED JOB FROM SUPABASE
+async function loadSavedJob(jobId) {
+  document.getElementById('search-results-box').style.display = 'none';
+  document.getElementById('search-input').value = '';
+  if (isDirty) {
+    try { await showConfirm('Unsaved Changes', 'Load a different job? Unsaved changes will be lost.', 'Load Anyway', true); }
+    catch(e) { return; }
+  }
+  try {
+    const [jr, lr, er, mr, cr, sr] = await Promise.all([
+      sb.from('jobs').select('*').eq('id', jobId).single(),
+      sb.from('labour_entries').select('*').eq('job_id', jobId).order('sort_order'),
+      sb.from('equipment_entries').select('*').eq('job_id', jobId).order('sort_order'),
+      sb.from('material_entries').select('*').eq('job_id', jobId).order('sort_order'),
+      sb.from('consumable_entries').select('*').eq('job_id', jobId).order('sort_order'),
+      sb.from('subcontractor_entries').select('*').eq('job_id', jobId).order('sort_order'),
+    ]);
+    if (jr.error) throw jr.error;
+    const j = jr.data;
+    currentJobId = j.id;
+    const row = {
+      'Job No': j.job_no, 'Job Category': j.job_category, 'Job Type': j.job_type || '',
+      'Status': j.status, 'Priority': j.priority,
+      'Customer': j.customer || '', 'Contact': j.contact || '', 'Phone': j.phone || '', 'Email': j.email || '',
+      'Date Received': j.date_received || '', 'Due Date': j.due_date || '',
+      'Description': j.description || '', 'Part Name': j.part_name || '',
+      'Customer PO': j.customer_po || '', 'Accepted By': j.accepted_by || '', 'Modified By': j.modified_by || '',
+      'Quoted TTD': j.quoted_ttd != null ? String(j.quoted_ttd) : '',
+      'Quoted TTD 2': j.quoted_ttd != null ? String(j.quoted_ttd) : '',
+      'Payment Terms': j.payment_terms || '', 'Misc TTD': j.misc_ttd != null ? String(j.misc_ttd) : '0',
+      'Costing Notes': j.costing_notes || '',
+      'JSA Ref': j.jsa_ref || '', 'JSA Title': j.jsa_title || '',
+      'JSA Date Issued': j.jsa_date_issued || '', 'JSA Issued By': j.jsa_issued_by || '',
+      'Date Completed': j.date_completed || '', 'Inspected By': j.inspected_by || '',
+      'QC Result': j.qc_result || '', 'QC Notes': j.qc_notes || '',
+      'QC State': JSON.stringify(j.qc_state || []),
+      'Drawings Detail': JSON.stringify(j.drawings || []),
+      'Specs Detail': JSON.stringify(j.specs || []),
+      'Reports Detail': JSON.stringify(j.reports || []),
+      'Last Saved': j.updated_at,
+      'Labour Detail': JSON.stringify((lr.data||[]).map(r => ({ date:r.entry_date||'', classification:r.classification||'', tech:r.technician||'', location:r.location||'Workshop', start:r.start_time||'', end:r.end_time||'', hrs:String(r.hours||0), rate:String(r.rate_ttd||0), amount:String(r.amount_ttd||0), tasks:r.tasks||[] }))),
+      'Equipment Detail': JSON.stringify((er.data||[]).map(r => ({ date:r.entry_date||'', machine:r.machine_name||'', asset:r.asset_no||'', location:r.location||'Workshop', setup:String(r.setup_hours||0), run:String(r.run_hours||0), rate:String(r.rate_ttd||0), amount:String(r.amount_ttd||0), tasks:r.tasks||[] }))),
+      'Materials Detail': JSON.stringify((mr.data||[]).map(r => ({ date:r.entry_date||'', desc:r.description||'', code:r.stock_code||'', qty:String(r.quantity||0), unit:r.unit||'', unitCost:String(r.unit_cost_ttd||0) }))),
+      'Consumables Detail': JSON.stringify((cr.data||[]).map(r => ({ date:r.entry_date||'', desc:r.description||'', cat:r.category||'', qty:String(r.quantity||0), unit:r.unit||'', unitCost:String(r.unit_cost_ttd||0) }))),
+      'Subs Detail': JSON.stringify((sr.data||[]).map(r => ({ date:r.entry_date||'', name:r.name||'', service:r.service_description||'', inv:r.invoice_ref||'', cost:String(r.cost_ttd||0) }))),
+    };
+    const delBtn = document.getElementById('delete-job-btn');
+    if (delBtn) delBtn.style.display = '';
+    loadJobFromRow(row);
+  } catch(err) {
+    showToast('✗ Failed to load job: ' + (err.message || err), 'error');
+  }
+}
 
 // ── DASHBOARD (Phase 4)
 async function openDashboard() {
@@ -1351,7 +1574,24 @@ function dashSort() {} function dashLoadJob() {}
 // ── OFFLINE
 window.addEventListener('online',  () => { updateOfflineBanner(); syncOfflineQueue(); });
 window.addEventListener('offline', () => { updateOfflineBanner(); });
-async function syncOfflineQueue() { /* Phase 2 */ }
+async function syncOfflineQueue() {
+  if (!navigator.onLine || !offlineQueue.length) return;
+  const queue = [...offlineQueue];
+  offlineQueue = [];
+  localStorage.setItem('q2_offline_queue', '[]');
+  const failed = [];
+  for (const item of queue) {
+    try {
+      if (item.action === 'save') await saveJobData(item.data, item.jobId || null);
+    } catch(e) {
+      failed.push(item);
+    }
+  }
+  offlineQueue = failed;
+  localStorage.setItem('q2_offline_queue', JSON.stringify(offlineQueue));
+  if (failed.length) showToast(`⚠ ${failed.length} offline save(s) failed to sync.`, 'warn');
+  else if (queue.length) showToast(`✓ ${queue.length} offline save(s) synced.`, 'success');
+}
 
 // ── DARK MODE ────────────────────────────────────
 function toggleDark() {
