@@ -2369,6 +2369,8 @@ function openSuggestModal(preType) {
   overlay.classList.add('show');
   populateSuggestType(preType || 'labour');
   document.getElementById('suggest-type').value = preType || 'labour';
+  const btn = document.getElementById('suggest-submit-btn');
+  if (btn) btn.textContent = currentRole === 'admin' ? 'Add Item' : 'Submit for Approval';
 }
 function closeSuggestModal() { document.getElementById('suggest-overlay').classList.remove('show'); }
 function populateSuggestType(type) {
@@ -2384,7 +2386,8 @@ function populateSuggestType(type) {
 async function submitSuggestion() {
   const type = document.getElementById('suggest-type').value;
   const cfg = CONFIG_TYPES[type];
-  const payload = { status: 'pending', submitted_by: currentUserId };
+  const isAdmin = currentRole === 'admin';
+  const payload = { status: isAdmin ? 'approved' : 'pending', submitted_by: currentUserId };
   for (const f of cfg.fields) {
     const el = document.getElementById('sf-' + f.k);
     if (!el) continue;
@@ -2395,7 +2398,12 @@ async function submitSuggestion() {
     const { error } = await sb.from(cfg.table).insert(payload);
     if (error) throw error;
     closeSuggestModal();
-    showToast('✓ Suggestion submitted for admin approval.', 'success');
+    if (isAdmin) {
+      await loadConfig();
+      showToast('✓ Item added and active.', 'success');
+    } else {
+      showToast('✓ Suggestion submitted for admin approval.', 'success');
+    }
   } catch(err) {
     showToast('✗ Submit failed: ' + (err.message || err), 'error');
   }
@@ -2489,7 +2497,7 @@ function showToast(msg, type='success') {
     <div id="suggest-fields"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeSuggestModal()">Cancel</button>
-      <button class="btn btn-save" onclick="submitSuggestion()">Submit for Approval</button>
+      <button class="btn btn-save" id="suggest-submit-btn" onclick="submitSuggestion()">Submit for Approval</button>
     </div>
   </div>
 </div>
