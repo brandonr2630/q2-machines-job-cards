@@ -1442,7 +1442,7 @@ async function saveJob() {
     currentJobId = await saveJobData(data, currentJobId);
     document.getElementById('last-saved-display').textContent = 'Saved ' + new Date().toLocaleString('en-TT');
     const delBtn = document.getElementById('delete-job-btn');
-    if (delBtn) delBtn.style.display = '';
+    if (delBtn) delBtn.style.display = currentRole === 'admin' ? '' : 'none';
     clearDraft();
     markClean();
     showToast('✓ Job ' + data['Job No'] + ' saved.', 'success');
@@ -1553,7 +1553,7 @@ async function loadSavedJob(jobId) {
       'Subs Detail': JSON.stringify((sr.data||[]).map(r => ({ date:r.entry_date||'', name:r.name||'', service:r.service_description||'', inv:r.invoice_ref||'', cost:String(r.cost_ttd||0) }))),
     };
     const delBtn = document.getElementById('delete-job-btn');
-    if (delBtn) delBtn.style.display = '';
+    if (delBtn) delBtn.style.display = currentRole === 'admin' ? '' : 'none';
     loadJobFromRow(row);
   } catch(err) {
     showToast('✗ Failed to load job: ' + (err.message || err), 'error');
