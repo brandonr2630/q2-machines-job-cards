@@ -1,0 +1,11 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/terranre/public_html/q2m.io/
+    - /bin/cp index.html $DEPLOYPATH
+    - /bin/cp manifest.json $DEPLOYPATH
+    - /bin/cp service-worker.js $DEPLOYPATH
+    - /bin/cp QQL_2026.svg $DEPLOYPATH
+    - /bin/cp QQL_2024.jpg $DEPLOYPATH
+    - /bin/cp icon-192.png $DEPLOYPATH
+    - /bin/cp icon-512.png $DEPLOYPATH
