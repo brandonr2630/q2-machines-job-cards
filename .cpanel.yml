@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/terranre/public_html/q2m.io/
+    - export DEPLOYPATH=/home/terranre/public_html/q2m.io/jobs/
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp manifest.json $DEPLOYPATH
     - /bin/cp service-worker.js $DEPLOYPATH
