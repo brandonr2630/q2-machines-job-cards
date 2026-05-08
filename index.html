@@ -1511,14 +1511,8 @@ async function initApp() {
   const draft = restoreDraft();
   if (draft) {
     const age = Math.round((Date.now() - draft.ts) / 60000);
-    if (confirm(`A draft was found (${age} min ago). Restore it?`)) {
-      closeHome();
-      loadJobFromRow(draft.data);
-      markDirty();
-      showToast('Draft restored.', 'warn');
-    } else {
-      clearDraft();
-    }
+    window._pendingDraft = draft.data;
+    showToast(`Unsaved draft found (${age} min ago) — click New Job to restore it.`, 'warn');
   }
   setInterval(syncOfflineQueue, 30000);
   setInterval(saveDraft, 120000);
@@ -3096,7 +3090,16 @@ async function loadHomeActivity() {
 }
 
 function homeGoAllJobs()  { openDashboard(); }
-function homeGoNewJob()   { closeHome(); }
+function homeGoNewJob() {
+  closeHome();
+  if (window._pendingDraft) {
+    loadJobFromRow(window._pendingDraft);
+    markDirty();
+    showToast('Draft restored.', 'warn');
+    window._pendingDraft = null;
+    clearDraft();
+  }
+}
 function homeGoConfig()   { closeHome(); openConfigManager(); }
 async function homeLoadJob(jobId) { closeHome(); await loadSavedJob(jobId); }
 
