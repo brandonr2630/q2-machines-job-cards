@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Job Card — Q2 Machines v3</title>
+<title>Job Card — Q2 Machines</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#F5C500">
@@ -1568,6 +1568,32 @@ async function logAudit(actionType, jobId, jobNo, description, metadata) {
       metadata:    metadata || null
     });
   } catch(e) { console.warn('Audit persist:', e.message); }
+}
+
+function clearAuditLog() {
+  auditLog = [];
+  const list = document.getElementById('audit-list');
+  if (list) list.innerHTML = '<p class="audit-empty" style="color:var(--muted);font-size:0.8rem;padding:8px 0;">No activity recorded yet for this job.</p>';
+  const badge = document.getElementById('audit-badge');
+  if (badge) badge.textContent = '0 entries';
+}
+
+function addAuditEntry(actionType, description) {
+  const entry = { type: actionType, description, timestamp: new Date() };
+  auditLog.unshift(entry);
+  const list = document.getElementById('audit-list');
+  if (!list) return;
+  const icons = { save:'💾', create:'✨', edit:'✏️', delete:'🗑️', approve:'✅', reject:'❌', comment:'💬' };
+  const icon = icons[actionType] || '📌';
+  const time = entry.timestamp.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const row = document.createElement('div');
+  row.className = 'audit-entry';
+  row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px solid var(--border);font-size:0.8rem;';
+  row.innerHTML = `<span style="flex-shrink:0">${icon}</span><span style="flex:1;color:var(--text)">${description}</span><span style="flex-shrink:0;color:var(--muted)">${time}</span>`;
+  if (list.querySelector('.audit-empty')) list.innerHTML = '';
+  list.prepend(row);
+  const badge = document.getElementById('audit-badge');
+  if (badge) badge.textContent = `${auditLog.length} ${auditLog.length === 1 ? 'entry' : 'entries'}`;
 }
 
 // ── LOGIN
