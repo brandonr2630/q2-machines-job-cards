@@ -410,37 +410,124 @@ body.dark .pin-input:focus { background:#2A2500; }
 /* ── DASHBOARD ── */
 .dashboard-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9000; display:none; flex-direction:column; overflow:hidden; }
 .dashboard-overlay.show { display:flex; }
-.dash-header { background:var(--ink); border-bottom:4px solid var(--gold); padding:12px 28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-.dash-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:var(--gold); flex:1; }
-.dash-toolbar { padding:12px 28px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-.dash-search { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:7px 12px; font-family:'Barlow',sans-serif; font-size:13px; flex:1; min-width:200px; outline:none; }
-.dash-search:focus { border-color:var(--gold); }
-.dash-filter { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 10px; font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; outline:none; }
-.dash-body { flex:1; overflow-y:auto; padding:20px 28px; }
-.dash-stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
-.dash-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 18px; box-shadow:var(--shadow); }
-.dash-stat-num { font-family:'Share Tech Mono',monospace; font-size:26px; font-weight:700; color:var(--gold); line-height:1; }
-.dash-stat-label { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin-top:4px; }
+
+/* Header */
+.dash-header { background:var(--ink); border-bottom:3px solid var(--gold); padding:0 28px; display:flex; align-items:center; gap:20px; min-height:64px; position:relative; }
+.dash-header::after { content:''; position:absolute; bottom:-3px; left:0; width:120px; height:3px; background:linear-gradient(90deg, var(--gold) 0%, rgba(245,197,0,0) 100%); }
+.dash-header-brand { display:flex; align-items:center; gap:12px; }
+.dash-header-logo { width:36px; height:36px; border-radius:4px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; box-shadow:0 0 0 1px rgba(245,197,0,.3); }
+.dash-header-logo img { width:90%; height:90%; object-fit:contain; }
+.dash-header-eyebrow { display:flex; flex-direction:column; gap:1px; }
+.dash-header-sup { font-family:'Barlow Condensed',sans-serif; font-size:8px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(245,197,0,.5); line-height:1; }
+.dash-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--gold); line-height:1; }
+.dash-header-divider { width:1px; height:28px; background:rgba(255,255,255,.12); }
+.dash-header-clock { font-family:'Share Tech Mono',monospace; font-size:11px; color:rgba(255,255,255,.35); letter-spacing:1px; }
+.dash-header-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+.dash-btn-new { background:var(--gold); border:none; border-radius:3px; color:var(--ink); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:7px 18px; cursor:pointer; transition:background .15s,transform .1s; display:flex; align-items:center; gap:6px; }
+.dash-btn-new:hover { background:var(--gold-dark); }
+.dash-btn-new:active { transform:scale(.98); }
+.dash-btn-icon { background:transparent; border:1px solid rgba(255,255,255,.18); border-radius:3px; color:rgba(255,255,255,.5); font-size:13px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; }
+.dash-btn-icon:hover { border-color:var(--gold); color:var(--gold); }
+
+/* Filter bar */
+.dash-filters { background:var(--surface); border-bottom:2px solid var(--border); padding:10px 28px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.dash-search-wrap { flex:1; min-width:220px; position:relative; }
+.dash-search-wrap::before { content:'⌕'; position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--ink-light); pointer-events:none; line-height:1; }
+.dash-search { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:7px 12px 7px 30px; font-family:'Barlow',sans-serif; font-size:13px; outline:none; transition:border-color .15s,box-shadow .15s; }
+.dash-search:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(245,197,0,.08); }
+.dash-filter { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); color:var(--ink); padding:6px 10px; font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; outline:none; transition:border-color .15s; }
+.dash-filter:focus { border-color:var(--gold); }
+.dash-filter-loc { display:flex; align-items:center; gap:0; background:var(--surface-3); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.dash-filter-loc-label { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); white-space:nowrap; padding:0 10px; border-right:1px solid var(--border); }
+.dash-loc-btn { padding:6px 12px; border:none; border-right:1px solid var(--border); background:transparent; color:var(--ink-light); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.dash-loc-btn:last-child { border-right:none; }
+.dash-loc-btn:hover { background:var(--surface-2); color:var(--ink); }
+.dash-loc-btn.active { background:var(--ink); color:var(--gold); }
+
+/* Body */
+.dash-body { flex:1; overflow-y:auto; padding:24px 28px; display:flex; flex-direction:column; gap:24px;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0; }
+body.dark .dash-body { background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px); }
+
+/* KPI Cards */
+.dash-kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+.dash-kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden; transition:transform .15s,box-shadow .15s; cursor:default; }
+.dash-kpi:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.dash-kpi::before { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--border); }
+.dash-kpi::after { content:''; position:absolute; top:0; right:0; width:40px; height:40px; border-radius:0 var(--radius-lg) 0 100%; opacity:.06; background:currentColor; }
+.dash-kpi.kpi-blue::before  { background:var(--blue); }  .dash-kpi.kpi-blue  { color:var(--blue); }
+.dash-kpi.kpi-red::before   { background:var(--red); }   .dash-kpi.kpi-red   { color:var(--red); }
+.dash-kpi.kpi-amber::before { background:var(--amber); } .dash-kpi.kpi-amber { color:var(--amber); }
+.dash-kpi.kpi-green::before { background:var(--green); } .dash-kpi.kpi-green { color:var(--green); }
+.dash-kpi.kpi-gold::before  { background:var(--gold); }  .dash-kpi.kpi-gold  { color:var(--gold-dark); }
+.dash-kpi-num { font-family:'Share Tech Mono',monospace; font-size:34px; font-weight:700; line-height:1; color:var(--ink); margin-bottom:8px; }
+.dash-kpi.kpi-blue  .dash-kpi-num { color:var(--blue); }
+.dash-kpi.kpi-red   .dash-kpi-num { color:var(--red); }
+.dash-kpi.kpi-amber .dash-kpi-num { color:var(--amber); }
+.dash-kpi.kpi-green .dash-kpi-num { color:var(--green); }
+.dash-kpi.kpi-gold  .dash-kpi-num { color:var(--gold-dark); }
+.dash-kpi-label { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink-light); }
+.dash-kpi-sub { font-size:10px; color:var(--ink-light); margin-top:3px; opacity:.6; font-family:'Barlow Condensed',sans-serif; letter-spacing:.5px; }
+
+/* Section heading */
+.dash-section-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.dash-section-title { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--ink-light); }
+.dash-section-line { flex:1; height:1px; background:var(--border); }
+.dash-section-count { font-family:'Share Tech Mono',monospace; font-size:11px; background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:1px 8px; color:var(--ink-light); }
+
+/* Action cards */
+.dash-action-cards { display:flex; flex-direction:column; gap:6px; }
+.dash-action-card { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--border); border-radius:var(--radius-lg); padding:12px 16px 12px 14px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); transition:all .15s; cursor:pointer; position:relative; overflow:hidden; }
+.dash-action-card::before { content:''; position:absolute; inset:0; opacity:0; transition:opacity .15s; }
+.dash-action-card:hover { box-shadow:var(--shadow-md); transform:translateX(2px); }
+.dash-action-card:hover::before { opacity:1; }
+.dash-action-card.overdue   { border-left-color:var(--red); background:linear-gradient(90deg, rgba(211,47,47,.04) 0%, var(--surface) 60%); }
+.dash-action-card.due-today { border-left-color:var(--amber); background:linear-gradient(90deg, rgba(230,81,0,.04) 0%, var(--surface) 60%); }
+.dash-action-card.due-soon  { border-left-color:var(--blue); background:linear-gradient(90deg, rgba(21,101,192,.04) 0%, var(--surface) 60%); }
+.dac-urgency { font-size:14px; flex-shrink:0; line-height:1; width:20px; text-align:center; }
+.dac-info { flex:1; min-width:0; }
+.dac-jobno { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--gold-dark); font-weight:700; letter-spacing:1px; }
+.dac-customer { font-size:14px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.3; font-family:'Barlow Condensed',sans-serif; letter-spacing:.5px; }
+.dac-meta { font-size:11px; color:var(--ink-light); margin-top:4px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.dac-due { font-weight:700; font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:.5px; }
+.dac-due.overdue { color:var(--red); }
+.dac-due.today   { color:var(--amber); }
+.dac-due.soon    { color:var(--blue); }
+.dac-actions { display:flex; gap:4px; flex-shrink:0; }
+.dac-btn { padding:5px 12px; border-radius:3px; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--ink-mid); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.dac-btn:hover { border-color:var(--gold); color:var(--ink); background:var(--gold-light); }
+.dac-btn.view { background:var(--ink); border-color:var(--ink); color:var(--gold); font-size:10px; }
+.dac-btn.view:hover { background:var(--ink-mid); }
+.dash-empty-action { padding:24px; text-align:center; color:var(--ink-light); font-size:12px; background:var(--surface); border:1px dashed var(--border-strong); border-radius:var(--radius-lg); font-family:'Barlow Condensed',sans-serif; letter-spacing:1px; text-transform:uppercase; }
+
+/* All Jobs Table */
 .dash-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow); }
 .dash-table { width:100%; border-collapse:collapse; }
 .dash-table thead tr { background:var(--ink); }
-.dash-table th { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); padding:10px 14px; text-align:left; white-space:nowrap; cursor:pointer; user-select:none; }
-.dash-table th:hover { color:#fff; }
-.dash-table th .sa { font-size:9px; margin-left:3px; opacity:.5; }
-.dash-table th.sorted .sa { opacity:1; }
+.dash-table th { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(245,197,0,.7); padding:10px 14px; text-align:left; white-space:nowrap; cursor:pointer; user-select:none; transition:color .15s; }
+.dash-table th:hover { color:var(--gold); }
+.dash-table th .sa { font-size:8px; margin-left:2px; opacity:.4; }
 .dash-table tbody tr { border-bottom:1px solid var(--border); transition:background .1s; cursor:pointer; }
-.dash-table tbody tr:hover { background:var(--surface-2); }
-.dash-table td { padding:9px 14px; font-size:12px; color:var(--ink-mid); }
-.dash-jno { font-family:'Share Tech Mono',monospace; color:var(--gold-dark); font-weight:700; font-size:12px; }
-.dash-cust { font-weight:600; color:var(--ink); }
-.dash-empty { padding:48px; text-align:center; color:var(--ink-light); font-size:13px; }
-.status-pill { display:inline-block; padding:2px 10px; border-radius:20px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+.dash-table tbody tr:nth-child(even) { background:var(--surface-2); }
+.dash-table tbody tr:hover { background:var(--gold-light) !important; }
+body.dark .dash-table tbody tr:hover { background:var(--gold-light) !important; }
+.dash-table tbody tr.row-overdue   td:first-child { border-left:3px solid var(--red); padding-left:11px; }
+.dash-table tbody tr.row-due-today td:first-child { border-left:3px solid var(--amber); padding-left:11px; }
+.dash-table td { padding:8px 14px; font-size:12px; color:var(--ink-mid); }
+.dash-jno { font-family:'Share Tech Mono',monospace; color:var(--gold-dark); font-weight:700; font-size:12px; letter-spacing:.5px; }
+.dash-cust { font-weight:600; color:var(--ink); font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:.3px; }
+.dash-empty { padding:48px; text-align:center; color:var(--ink-light); font-size:12px; font-family:'Barlow Condensed',sans-serif; letter-spacing:2px; text-transform:uppercase; }
+
+/* Status pills */
+.status-pill { display:inline-block; padding:2px 9px; border-radius:3px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; white-space:nowrap; }
 .sp-received  { background:var(--surface-3); color:var(--ink-light); border:1px solid var(--border-strong); }
 .sp-progress  { background:var(--blue-bg);   color:var(--blue);      border:1px solid #90CAF9; }
 .sp-hold      { background:var(--amber-bg);  color:var(--amber);     border:1px solid #FFCC80; }
 .sp-completed { background:var(--green-bg);  color:var(--green);     border:1px solid #A5D6A7; }
-.sp-invoiced  { background:var(--ink);       color:#fff; }
-.sp-closed    { background:#444;             color:#aaa; }
+.sp-invoiced  { background:var(--ink);       color:var(--gold); border:1px solid var(--ink); }
+.sp-closed    { background:var(--surface-3); color:var(--ink-light); border:1px solid var(--border); }
 
 /* ── READONLY ── */
 body.readonly .field input,body.readonly .field select,body.readonly .field textarea,
@@ -489,7 +576,8 @@ body.readonly .qc-check { pointer-events:none; }
   .qc-grid { grid-template-columns:1fr 1fr; }
   .signoff-grid { grid-template-columns:1fr 1fr; }
   .cost-summary { grid-template-columns:1fr; }
-  .dash-stats { grid-template-columns:repeat(3,1fr); }
+  .dash-kpis { grid-template-columns:repeat(3,1fr); }
+  .dac-actions { display:none; }
   .dyn-table { min-width:560px; }
   .scroll-hint { display:block; }
   .modal { max-width:520px; width:90%; }
@@ -560,11 +648,15 @@ body.readonly .qc-check { pointer-events:none; }
   .modal h3 { font-size:16px; }
 
   /* Dashboard */
-  .dash-stats { grid-template-columns:repeat(2,1fr); }
-  .dash-header { padding:10px 16px; }
-  .dash-toolbar { padding:10px 16px; }
-  .dash-body { padding:14px 16px; }
+  .dash-kpis { grid-template-columns:repeat(2,1fr); }
+  .dash-header { padding:0 16px; min-height:52px; }
+  .dash-title { font-size:15px; }
+  .dash-filters { padding:8px 16px; gap:6px; }
+  .dash-filter-loc { display:none; }
+  .dash-body { padding:12px 16px; gap:14px; }
   .dash-table td, .dash-table th { padding:8px 10px; font-size:11px; }
+  .dac-actions { flex-direction:column; gap:4px; }
+  .dac-btn { font-size:10px; padding:4px 8px; }
 
   /* Login */
   .login-box { max-width:calc(100% - 24px); }
@@ -586,7 +678,7 @@ body.readonly .qc-check { pointer-events:none; }
   .btn-topbar { display:none; }
   .job-no-label { display:none; }
   .status-options { grid-template-columns:1fr 1fr; }
-  .dash-stats { grid-template-columns:1fr 1fr; }
+  .dash-kpis { grid-template-columns:1fr 1fr; }
   .card-header-title { font-size:12px; }
   .login-brand-text .name { font-size:16px; letter-spacing:2px; }
   .login-brand-text .sub { font-size:8px; letter-spacing:1.5px; }
@@ -999,6 +1091,12 @@ body.readonly .qc-check { pointer-events:none; }
             <option>Internal — Maintenance</option><option>Internal — Manufacturing</option><option>Other</option>
           </select>
         </div>
+        <div class="field"><label class="field-label">Execution Location</label>
+          <select id="f-location">
+            <option value="">Select...</option>
+            <option>Workshop</option><option>On-Site</option><option>Mixed</option>
+          </select>
+        </div>
         <div class="field"><label class="field-label">Customer PO / Reference</label><input type="text" id="f-cust-po" placeholder="PO number"></div>
         <div class="field span-2"><label class="field-label">Quoted Amount (TTD)</label><input type="number" id="f-quoted" placeholder="0.00" step="0.01" oninput="syncQuoted(this)"></div>
         <div class="field"><label class="field-label">Accepted By (Shop)</label><input type="text" id="f-accepted-by" placeholder="Staff member"></div>
@@ -1035,7 +1133,7 @@ body.readonly .qc-check { pointer-events:none; }
   </div>
 
   <!-- 3. LABOUR -->
-  <div class="card">
+  <div class="card" id="card-labour">
     <div class="card-header"><span class="card-header-icon">🕐</span><span class="card-header-title">Labour &amp; Time Tracking</span><span class="card-header-badge" id="labour-hrs-badge">0.00 hrs</span></div>
     <div class="card-body">
       <p class="scroll-hint">← scroll to see all columns →</p>
@@ -1064,7 +1162,7 @@ body.readonly .qc-check { pointer-events:none; }
   </div>
 
   <!-- 4. EQUIPMENT -->
-  <div class="card">
+  <div class="card" id="card-equip">
     <div class="card-header"><span class="card-header-icon">🔧</span><span class="card-header-title">Equipment &amp; Machines Used</span></div>
     <div class="card-body">
       <p class="scroll-hint">← scroll to see all columns →</p>
@@ -1090,7 +1188,7 @@ body.readonly .qc-check { pointer-events:none; }
   </div>
 
   <!-- 5. MATERIALS -->
-  <div class="card">
+  <div class="card" id="card-materials">
     <div class="card-header"><span class="card-header-icon">📦</span><span class="card-header-title">Materials &amp; Stock Used</span></div>
     <div class="card-body">
       <p class="scroll-hint">← scroll to see all columns →</p>
@@ -1292,40 +1390,92 @@ body.readonly .qc-check { pointer-events:none; }
 
 <!-- DASHBOARD -->
 <div class="dashboard-overlay" id="dashboard-overlay">
+
+  <!-- Header -->
   <div class="dash-header">
-    <div class="dash-title">📋 All Job Cards</div>
-    <button class="btn btn-outline" style="padding:6px 16px;font-size:12px;color:#ccc;border-color:#555;" onclick="closeDashboard()">✕ Close</button>
+    <div class="dash-header-brand">
+      <div class="dash-header-logo"><img src="QQL_2026.svg" alt="Q2M"></div>
+      <div class="dash-header-eyebrow">
+        <div class="dash-header-sup">Q2 Machines</div>
+        <div class="dash-title">Dashboard</div>
+      </div>
+    </div>
+    <div class="dash-header-right">
+      <button class="dash-btn-new" onclick="closeDashboard();safeNewJobCard()">＋ New Job</button>
+      <button class="dash-btn-icon" title="Refresh" onclick="loadDashboard()">↺</button>
+      <button class="dash-btn-icon" title="Close" onclick="closeDashboard()">✕</button>
+    </div>
   </div>
-  <div class="dash-toolbar">
-    <input class="dash-search" id="dash-search" placeholder="Filter by job no., customer, description..." oninput="renderDashTable()">
-    <select class="dash-filter" id="dash-status-filter" onchange="renderDashTable()">
+
+  <!-- Filter Bar -->
+  <div class="dash-filters">
+    <div class="dash-search-wrap">
+      <input class="dash-search" id="dash-search" placeholder="Search by job no., customer, description..." oninput="renderDash()">
+    </div>
+    <select class="dash-filter" id="dash-status-filter" onchange="renderDash()">
       <option value="">All Statuses</option>
       <option>Received</option><option>In Progress</option><option>On Hold</option>
       <option>Completed</option><option>Invoiced</option><option>Closed</option>
     </select>
-    <select class="dash-filter" id="dash-priority-filter" onchange="renderDashTable()">
-      <option value="">All Priorities</option>
-      <option>Normal</option><option>Urgent</option><option>Rush</option><option>Scheduled</option>
+    <select class="dash-filter" id="dash-client-filter" onchange="renderDash()">
+      <option value="">All Clients</option>
     </select>
-    <button class="btn btn-save" style="padding:6px 16px;font-size:12px;" onclick="loadDashboard()">↺ Refresh</button>
-  </div>
-  <div class="dash-body">
-    <div class="dash-stats" id="dash-stats"></div>
-    <div class="dash-table-wrap">
-      <table class="dash-table">
-        <thead><tr>
-          <th onclick="dashSort('Job No')" id="dth-jobno">Job No. <span class="sa">↕</span></th>
-          <th onclick="dashSort('Customer')" id="dth-customer">Customer <span class="sa">↕</span></th>
-          <th onclick="dashSort('Job Type')" id="dth-type">Type <span class="sa">↕</span></th>
-          <th onclick="dashSort('Status')" id="dth-status">Status <span class="sa">↕</span></th>
-          <th onclick="dashSort('Priority')" id="dth-priority">Priority <span class="sa">↕</span></th>
-          <th onclick="dashSort('Date Received')" id="dth-received">Received <span class="sa">↕</span></th>
-          <th onclick="dashSort('Due Date')" id="dth-due">Due <span class="sa">↕</span></th>
-          <th>Description</th>
-        </tr></thead>
-        <tbody id="dash-tbody"></tbody>
-      </table>
+    <select class="dash-filter" id="dash-priority-filter" onchange="renderDash()">
+      <option value="">All Priorities</option>
+      <option>Urgent</option><option>Rush</option><option>Normal</option><option>Scheduled</option>
+    </select>
+    <div class="dash-filter-loc">
+      <span class="dash-filter-loc-label">Location:</span>
+      <button class="dash-loc-btn active" onclick="setLocFilter(this,'')">All</button>
+      <button class="dash-loc-btn" onclick="setLocFilter(this,'Workshop')">Workshop</button>
+      <button class="dash-loc-btn" onclick="setLocFilter(this,'On-Site')">On-Site</button>
+      <button class="dash-loc-btn" onclick="setLocFilter(this,'Mixed')">Mixed</button>
     </div>
+  </div>
+
+  <!-- Body -->
+  <div class="dash-body">
+
+    <!-- KPI Cards -->
+    <div class="dash-kpis" id="dash-kpis"></div>
+
+    <!-- Jobs Needing Action -->
+    <div>
+      <div class="dash-section-head">
+        <div class="dash-section-title">Jobs Needing Action</div>
+        <div class="dash-section-line"></div>
+        <div class="dash-section-count" id="dash-action-count">0</div>
+      </div>
+      <div class="dash-action-cards" id="dash-action-cards">
+        <div class="dash-empty-action">Loading…</div>
+      </div>
+    </div>
+
+    <!-- All Jobs -->
+    <div>
+      <div class="dash-section-head">
+        <div class="dash-section-title">All Jobs</div>
+        <div class="dash-section-line"></div>
+        <div class="dash-section-count" id="dash-all-count">0</div>
+      </div>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr>
+            <th onclick="dashSort('job_no')">Job No. <span class="sa">↕</span></th>
+            <th onclick="dashSort('customer')">Customer <span class="sa">↕</span></th>
+            <th onclick="dashSort('job_type')">Type <span class="sa">↕</span></th>
+            <th onclick="dashSort('status')">Status <span class="sa">↕</span></th>
+            <th onclick="dashSort('priority')">Priority <span class="sa">↕</span></th>
+            <th onclick="dashSort('location')">Location <span class="sa">↕</span></th>
+            <th onclick="dashSort('date_received')">Received <span class="sa">↕</span></th>
+            <th onclick="dashSort('due_date')">Due <span class="sa">↕</span></th>
+            <th>Description</th>
+          </tr></thead>
+          <tbody id="dash-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1399,6 +1549,7 @@ let auditLog      = [];
 let dashData      = [];
 let dashSortKey   = 'job_no';
 let dashSortAsc   = false;
+let dashLocFilter = '';
 let confirmResolve = null;
 let confirmReject  = null;
 
@@ -1639,6 +1790,7 @@ async function saveJobData(data, jobId) {
     job_no:          data['Job No'],
     job_category:    data['Job Category'],
     job_type:        data['Job Type'] || null,
+    location:        data['Location'] || null,
     status:          data['Status'],
     priority:        data['Priority'],
     customer:        data['Customer'] || null,
@@ -1848,7 +2000,7 @@ async function loadSavedJob(jobId) {
     const j = jr.data;
     currentJobId = j.id;
     const row = {
-      'Job No': j.job_no, 'Job Category': j.job_category, 'Job Type': j.job_type || '',
+      'Job No': j.job_no, 'Job Category': j.job_category, 'Job Type': j.job_type || '', 'Location': j.location || '',
       'Status': j.status, 'Priority': j.priority,
       'Customer': j.customer || '', 'Contact': j.contact || '', 'Phone': j.phone || '', 'Email': j.email || '',
       'Date Received': j.date_received || '', 'Due Date': j.due_date || '',
@@ -1889,78 +2041,161 @@ async function openDashboard() {
 function closeDashboard() { document.getElementById('dashboard-overlay').classList.remove('show'); }
 
 async function loadDashboard() {
-  document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="8" class="dash-empty">Loading…</td></tr>';
-  document.getElementById('dash-stats').innerHTML = '';
+  document.getElementById('dash-tbody').innerHTML = '<tr><td colspan="9" class="dash-empty">Loading…</td></tr>';
+  document.getElementById('dash-action-cards').innerHTML = '<div class="dash-empty-action">Loading…</div>';
+  document.getElementById('dash-kpis').innerHTML = '';
   try {
     const { data, error } = await sb.from('jobs')
-      .select('id, job_no, customer, job_type, status, priority, date_received, due_date, description, updated_at')
+      .select('id, job_no, customer, job_type, status, priority, date_received, due_date, description, quoted_ttd, location, updated_at')
       .order('created_at', { ascending: false });
     if (error) throw error;
     dashData = data || [];
-    renderDashStats();
-    renderDashTable();
+    populateDashClientFilter();
+    renderDash();
   } catch(e) {
-    document.getElementById('dash-tbody').innerHTML = `<tr><td colspan="8" class="dash-empty">Error loading jobs: ${escHtml(e.message)}</td></tr>`;
+    document.getElementById('dash-tbody').innerHTML = `<tr><td colspan="9" class="dash-empty">Error loading jobs: ${escHtml(e.message)}</td></tr>`;
   }
 }
 
-function renderDashStats() {
-  const total    = dashData.length;
-  const open     = dashData.filter(j => !['Invoiced','Closed'].includes(j.status)).length;
-  const progress = dashData.filter(j => j.status === 'In Progress').length;
-  const hold     = dashData.filter(j => j.status === 'On Hold').length;
-  const invoiced = dashData.filter(j => j.status === 'Invoiced').length;
-  const stats = [
-    { label:'Total Jobs',  num:total,    color:'' },
-    { label:'Open',        num:open,     color:'' },
-    { label:'In Progress', num:progress, color:'color:var(--blue)' },
-    { label:'On Hold',     num:hold,     color:'color:var(--amber)' },
-    { label:'Invoiced',    num:invoiced, color:'color:var(--green)' },
-  ];
-  document.getElementById('dash-stats').innerHTML = stats.map(s =>
-    `<div class="dash-stat"><div class="dash-stat-num" style="${s.color}">${s.num}</div><div class="dash-stat-label">${s.label}</div></div>`
-  ).join('');
+function populateDashClientFilter() {
+  const clients = [...new Set(dashData.map(j => j.customer).filter(Boolean))].sort();
+  const sel = document.getElementById('dash-client-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Clients</option>' +
+    clients.map(c => `<option${c === cur ? ' selected' : ''}>${escHtml(c)}</option>`).join('');
 }
 
-function renderDashTable() {
+function setLocFilter(btn, val) {
+  dashLocFilter = val;
+  document.querySelectorAll('.dash-loc-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderDash();
+}
+
+function getDashFiltered() {
   const search    = (document.getElementById('dash-search')?.value || '').toLowerCase();
   const statusF   = document.getElementById('dash-status-filter')?.value || '';
+  const clientF   = document.getElementById('dash-client-filter')?.value || '';
   const priorityF = document.getElementById('dash-priority-filter')?.value || '';
-  const today     = new Date().toISOString().split('T')[0];
-  let rows = dashData.filter(j => {
+  return dashData.filter(j => {
     if (statusF   && j.status   !== statusF)   return false;
+    if (clientF   && j.customer !== clientF)   return false;
     if (priorityF && j.priority !== priorityF) return false;
+    if (dashLocFilter && (j.location || '') !== dashLocFilter) return false;
     if (search) {
-      const hay = `${j.job_no} ${j.customer||''} ${j.description||''} ${j.job_type||''}`.toLowerCase();
+      const hay = `${j.job_no||''} ${j.customer||''} ${j.description||''} ${j.job_type||''}`.toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
   });
-  rows = [...rows].sort((a, b) => {
+}
+
+function renderDash() {
+  const jobs = getDashFiltered();
+  renderDashKPIs(jobs);
+  renderDashActionCards(jobs);
+  renderDashTable(jobs);
+}
+
+function renderDashKPIs(jobs) {
+  const today   = new Date().toISOString().split('T')[0];
+  const weekEnd = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+  const done    = ['Completed','Invoiced','Closed'];
+  const total    = jobs.length;
+  const inProg   = jobs.filter(j => j.status === 'In Progress').length;
+  const overdue  = jobs.filter(j => j.due_date && j.due_date < today && !done.includes(j.status)).length;
+  const thisWeek = jobs.filter(j => j.due_date && j.due_date >= today && j.due_date <= weekEnd && !done.includes(j.status)).length;
+  const revenue  = jobs.filter(j => j.status !== 'Closed').reduce((s, j) => s + (parseFloat(j.quoted_ttd) || 0), 0);
+  const fmtRev   = revenue >= 1000 ? `TT$${(revenue/1000).toFixed(1)}K` : `TT$${revenue.toFixed(0)}`;
+  document.getElementById('dash-kpis').innerHTML = [
+    { label:'Total Jobs',    num:total,   sub:'All records',      cls:'' },
+    { label:'In Progress',   num:inProg,  sub:'Active now',       cls:'kpi-blue' },
+    { label:'Overdue',       num:overdue, sub:'Past due date',    cls: overdue  ? 'kpi-red'   : '' },
+    { label:'Due This Week', num:thisWeek,sub:'Next 7 days',      cls: thisWeek ? 'kpi-amber' : '' },
+    { label:'Pipeline',      num:fmtRev,  sub:'Open quoted value',cls:'kpi-gold' },
+  ].map(k => `<div class="dash-kpi ${k.cls}">
+    <div class="dash-kpi-num">${k.num}</div>
+    <div class="dash-kpi-label">${k.label}</div>
+    <div class="dash-kpi-sub">${k.sub}</div>
+  </div>`).join('');
+}
+
+function renderDashActionCards(jobs) {
+  const today   = new Date().toISOString().split('T')[0];
+  const in3days = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
+  const active  = jobs
+    .filter(j => ['In Progress','On Hold'].includes(j.status))
+    .sort((a, b) => (a.due_date || '9999') < (b.due_date || '9999') ? -1 : 1);
+  document.getElementById('dash-action-count').textContent = active.length;
+  if (!active.length) {
+    document.getElementById('dash-action-cards').innerHTML = '<div class="dash-empty-action">No active jobs requiring action.</div>';
+    return;
+  }
+  const pillCls = { 'In Progress':'sp-progress', 'On Hold':'sp-hold' };
+  document.getElementById('dash-action-cards').innerHTML = active.map(j => {
+    let urgCls = '', urgIcon = '🟢', dueText = 'No due date', dueCls = '';
+    if (j.due_date) {
+      if      (j.due_date < today)   { urgCls='overdue';   urgIcon='🔴'; dueText=`Overdue — ${j.due_date}`; dueCls='overdue'; }
+      else if (j.due_date === today) { urgCls='due-today'; urgIcon='🟡'; dueText='Due Today';               dueCls='today'; }
+      else if (j.due_date <= in3days){ urgCls='due-soon';  urgIcon='🔵'; dueText=`Due ${j.due_date}`;      dueCls='soon'; }
+      else                           {                                    dueText=`Due ${j.due_date}`; }
+    }
+    const loc = j.location ? `<span>📍 ${escHtml(j.location)}</span>` : '';
+    return `<div class="dash-action-card ${urgCls}" onclick="dashLoadJob('${j.id}')">
+      <div class="dac-urgency">${urgIcon}</div>
+      <div class="dac-info">
+        <div class="dac-jobno">${escHtml(j.job_no)}</div>
+        <div class="dac-customer">${escHtml(j.customer || '—')}</div>
+        <div class="dac-meta">
+          <span class="status-pill ${pillCls[j.status]||''}">${escHtml(j.status)}</span>
+          <span class="dac-due ${dueCls}">${dueText}</span>
+          ${loc}
+        </div>
+      </div>
+      <div class="dac-actions">
+        <button class="dac-btn" onclick="event.stopPropagation();dashOpenSection('${j.id}','card-labour')">Labour</button>
+        <button class="dac-btn" onclick="event.stopPropagation();dashOpenSection('${j.id}','card-equip')">Equipment</button>
+        <button class="dac-btn" onclick="event.stopPropagation();dashOpenSection('${j.id}','card-materials')">Materials</button>
+        <button class="dac-btn view" onclick="event.stopPropagation();dashLoadJob('${j.id}')">View</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashTable(jobs) {
+  const today = new Date().toISOString().split('T')[0];
+  const sorted = [...jobs].sort((a, b) => {
     let va = a[dashSortKey] || '', vb = b[dashSortKey] || '';
     if (typeof va === 'string') va = va.toLowerCase();
     if (typeof vb === 'string') vb = vb.toLowerCase();
     return dashSortAsc ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
   });
+  document.getElementById('dash-all-count').textContent = sorted.length;
   const tbody = document.getElementById('dash-tbody');
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="dash-empty">No jobs match the current filters.</td></tr>';
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="dash-empty">No jobs match the current filters.</td></tr>';
     return;
   }
-  const pillCls = { Received:'sp-received','In Progress':'sp-progress','On Hold':'sp-hold',Completed:'sp-completed',Invoiced:'sp-invoiced',Closed:'sp-closed' };
-  tbody.innerHTML = rows.map(j => {
-    const isOverdue = j.due_date && j.due_date < today && !['Completed','Invoiced','Closed'].includes(j.status);
+  const pillCls  = { Received:'sp-received','In Progress':'sp-progress','On Hold':'sp-hold',Completed:'sp-completed',Invoiced:'sp-invoiced',Closed:'sp-closed' };
+  const prioCols = { Urgent:'color:var(--red)', Rush:'color:var(--amber)', Normal:'', Scheduled:'color:var(--blue)' };
+  tbody.innerHTML = sorted.map(j => {
+    const done      = ['Completed','Invoiced','Closed'].includes(j.status);
+    const isOverdue = j.due_date && j.due_date < today && !done;
+    const isToday   = j.due_date === today && !done;
+    const rowCls    = isOverdue ? 'row-overdue' : isToday ? 'row-due-today' : '';
     const dueCell   = j.due_date
-      ? (isOverdue ? `<span style="color:var(--red);font-weight:600;">${j.due_date} !</span>` : j.due_date)
+      ? (isOverdue ? `<span style="color:var(--red);font-weight:700;">⚠ ${j.due_date}</span>`
+        : isToday  ? `<span style="color:var(--amber);font-weight:700;">Today</span>`
+        : j.due_date)
       : '—';
-    const desc = j.description ? escHtml(j.description).substring(0,60) + (j.description.length > 60 ? '…' : '') : '—';
-    return `<tr onclick="dashLoadJob('${j.id}')">
+    const desc = j.description ? escHtml(j.description).substring(0, 55) + (j.description.length > 55 ? '…' : '') : '—';
+    return `<tr class="${rowCls}" onclick="dashLoadJob('${j.id}')">
       <td><span class="dash-jno">${escHtml(j.job_no)}</span></td>
-      <td><span class="dash-cust">${escHtml(j.customer||'—')}</span></td>
-      <td>${escHtml(j.job_type||'—')}</td>
-      <td><span class="status-pill ${pillCls[j.status]||''}">${escHtml(j.status)}</span></td>
-      <td>${escHtml(j.priority||'—')}</td>
-      <td style="font-family:'Share Tech Mono',monospace;font-size:11px;">${j.date_received||'—'}</td>
+      <td><span class="dash-cust">${escHtml(j.customer || '—')}</span></td>
+      <td>${escHtml(j.job_type || '—')}</td>
+      <td><span class="status-pill ${pillCls[j.status] || ''}">${escHtml(j.status)}</span></td>
+      <td><span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;${prioCols[j.priority]||''}">${escHtml(j.priority || '—')}</span></td>
+      <td style="font-size:11px;">${escHtml(j.location || '—')}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:11px;">${j.date_received || '—'}</td>
       <td style="font-family:'Share Tech Mono',monospace;font-size:11px;">${dueCell}</td>
       <td style="color:var(--ink-light);">${desc}</td>
     </tr>`;
@@ -1968,16 +2203,23 @@ function renderDashTable() {
 }
 
 function dashSort(key) {
-  const keyMap = { 'Job No':'job_no','Customer':'customer','Job Type':'job_type','Status':'status','Priority':'priority','Date Received':'date_received','Due Date':'due_date' };
-  const col = keyMap[key] || key;
-  if (dashSortKey === col) dashSortAsc = !dashSortAsc;
-  else { dashSortKey = col; dashSortAsc = true; }
-  renderDashTable();
+  if (dashSortKey === key) dashSortAsc = !dashSortAsc;
+  else { dashSortKey = key; dashSortAsc = true; }
+  renderDash();
 }
 
 async function dashLoadJob(jobId) {
   closeDashboard();
   await loadSavedJob(jobId);
+}
+
+async function dashOpenSection(jobId, cardId) {
+  closeDashboard();
+  await loadSavedJob(jobId);
+  setTimeout(() => {
+    const el = document.getElementById(cardId);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 700);
 }
 
 // ── OFFLINE
@@ -2554,6 +2796,7 @@ function collectFormData() {
     'Job No':           document.getElementById('job-id-display').textContent,
     'Job Category':     getCat(),
     'Job Type':         get('f-job-type'),
+    'Location':         get('f-location'),
     'Status':           getStatus(),
     'Priority':         get('priority-select'),
     'Customer':         get('f-customer'),
@@ -2607,7 +2850,7 @@ function loadJobFromRow(row) {
   const ps = document.getElementById('priority-select'); if (ps) ps.value = row['Priority']||'Normal';
   set('f-customer',row['Customer']); set('f-contact',row['Contact']); set('f-phone',row['Phone']); set('f-email',row['Email']);
   set('f-date-received',row['Date Received']); set('f-due-date',row['Due Date']); set('f-description',row['Description']);
-  set('f-part-name',row['Part Name']); set('f-job-type',row['Job Type']); set('f-cust-po',row['Customer PO']);
+  set('f-part-name',row['Part Name']); set('f-job-type',row['Job Type']); set('f-location',row['Location']||''); set('f-cust-po',row['Customer PO']);
   set('f-quoted',row['Quoted TTD']); set('f-quoted-2',row['Quoted TTD 2']||row['Quoted TTD']);
   set('f-accepted-by',row['Accepted By']); set('f-payment-terms',row['Payment Terms']);
   set('f-costing-notes',row['Costing Notes']); set('cs-misc',row['Misc TTD']||'0');
