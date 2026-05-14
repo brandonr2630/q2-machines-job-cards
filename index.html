@@ -1650,7 +1650,6 @@ async function doLogin() {
     document.getElementById('login-overlay').classList.add('hidden');
     applyRole(currentRole, currentUser);
     await logAudit('login', null, null, 'User signed in');
-    await initApp();
   } catch(e) {
     errEl.textContent = e.message.includes('Invalid login credentials')
       ? 'Incorrect email or password.'
@@ -1661,7 +1660,16 @@ async function doLogin() {
     loginBox.classList.add('shake');
     setTimeout(() => loginBox.classList.remove('shake'), 500);
     document.getElementById('login-password').focus();
-  } finally { loginBtn.classList.remove('loading'); }
+    loginBtn.classList.remove('loading');
+    return;
+  }
+  loginBtn.classList.remove('loading');
+  try {
+    await initApp();
+  } catch(e) {
+    console.error('initApp error:', e);
+    showToast('App failed to load: ' + (e.message || e), 'error');
+  }
 }
 
 async function doLogout() {
@@ -1689,7 +1697,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     currentUserId = session.user.id;
     document.getElementById('login-overlay').classList.add('hidden');
     applyRole(currentRole, currentUser);
-    await initApp();
+    try {
+      await initApp();
+    } catch(e) {
+      console.error('initApp error:', e);
+      showToast('App failed to load: ' + (e.message || e), 'error');
+    }
   } else {
     setTimeout(() => document.getElementById('login-username').focus(), 100);
   }
@@ -3179,16 +3192,16 @@ async function renderUsersPanel() {
         </div>
         <div class="inline-usermgr-body">
           <div class="usermgr-create-grid">
-            <div class="usermgr-create-field"><label>Username *</label><input type="text"     id="new-user-name"  placeholder="Display name"></div>
-            <div class="usermgr-create-field"><label>Email *</label>   <input type="email"    id="new-user-email" placeholder="user@example.com"></div>
-            <div class="usermgr-create-field"><label>Password *</label><input type="password" id="new-user-pw"    placeholder="Min 6 characters"></div>
+            <div class="usermgr-create-field"><label>Username *</label><input type="text"     id="inu-name"  placeholder="Display name"></div>
+            <div class="usermgr-create-field"><label>Email *</label>   <input type="email"    id="inu-email" placeholder="user@example.com"></div>
+            <div class="usermgr-create-field"><label>Password *</label><input type="password" id="inu-pw"    placeholder="Min 6 characters"></div>
             <div class="usermgr-create-field"><label>Role</label>
-              <select id="new-user-role"><option value="user">user</option><option value="admin">admin</option></select>
+              <select id="inu-role"><option value="user">user</option><option value="admin">admin</option></select>
             </div>
           </div>
           <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
             <button class="btn btn-save" style="padding:7px 20px;" onclick="createNewUserInline()">＋ Create User</button>
-            <span id="usermgr-create-msg" style="font-size:12px;"></span>
+            <span id="inu-msg" style="font-size:12px;"></span>
           </div>
         </div>
       </div>
@@ -3208,11 +3221,11 @@ async function renderUsersPanel() {
 }
 
 async function createNewUserInline() {
-  const email    = document.getElementById('new-user-email').value.trim();
-  const name     = document.getElementById('new-user-name').value.trim();
-  const password = document.getElementById('new-user-pw').value;
-  const role     = document.getElementById('new-user-role').value;
-  const msgEl    = document.getElementById('usermgr-create-msg');
+  const email    = document.getElementById('inu-email').value.trim();
+  const name     = document.getElementById('inu-name').value.trim();
+  const password = document.getElementById('inu-pw').value;
+  const role     = document.getElementById('inu-role').value;
+  const msgEl    = document.getElementById('inu-msg');
   msgEl.style.color = 'var(--ink-light)';
   msgEl.textContent = '';
   if (!email)                           { msgEl.style.color='var(--red)'; msgEl.textContent='Email is required.'; return; }
@@ -3220,21 +3233,24 @@ async function createNewUserInline() {
   if (!name)                            { msgEl.style.color='var(--red)'; msgEl.textContent='Username is required.'; return; }
   msgEl.textContent = 'Creating…';
   try {
+    // Save admin session — signUp may switch the active session to the new user
+    const { data: { session: adminSession } } = await sb.auth.getSession();
     const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password, options:{ data:{ username:name } } });
     if (signUpError) throw signUpError;
     const uid = signUpData?.user?.id;
-    if (uid) {
-      await sb.from('profiles').upsert({ id:uid, username:name, role }, { onConflict:'id' });
+    if (!uid) throw new Error('User created but ID was not returned. Check Supabase auth settings.');
+    await sb.from('profiles').upsert({ id:uid, username:name, role }, { onConflict:'id' });
+    // Restore admin session if signUp switched it
+    if (adminSession && signUpData.session) {
+      await sb.auth.setSession({ access_token: adminSession.access_token, refresh_token: adminSession.refresh_token });
     }
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = `✓ User "${name}" created.`;
-    document.getElementById('new-user-email').value = '';
-    document.getElementById('new-user-name').value  = '';
-    document.getElementById('new-user-pw').value    = '';
+    // Re-render panel (destroys current DOM), then show persistent toast
     await renderUsersPanel();
+    showToast(`✓ User "${name}" created.${signUpData.session ? '' : ' Email confirmation may be required.'}`, 'success');
   } catch(err) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = err.message || 'Failed to create user.';
+    const el = document.getElementById('inu-msg');
+    if (el) { el.style.color = 'var(--red)'; el.textContent = err.message || 'Failed to create user.'; }
+    else showToast('✗ ' + (err.message || 'Failed to create user.'), 'error');
   }
 }
 
