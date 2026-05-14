@@ -1847,8 +1847,23 @@ async function initApp() {
   const draft = restoreDraft();
   if (draft) {
     const age = Math.round((Date.now() - draft.ts) / 60000);
-    window._pendingDraft = draft.data;
-    showToast(`Unsaved draft found (${age} min ago) — click New Job to restore it.`, 'warn');
+    try {
+      await showConfirm(
+        'Unsaved Draft Found',
+        `A draft job card from ${age} minute${age !== 1 ? 's' : ''} ago was found. Restore it now?`,
+        'Restore Draft'
+      );
+      // User chose to restore
+      closeDashboard();
+      await newJobCard(true);
+      loadJobFromRow(draft.data);
+      markDirty();
+      showToast('✓ Draft restored.', 'warn');
+      clearDraft();
+    } catch(e) {
+      // User chose to discard
+      clearDraft();
+    }
   }
   setInterval(syncOfflineQueue, 30000);
   setInterval(saveDraft, 120000);
