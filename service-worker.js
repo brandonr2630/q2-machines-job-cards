@@ -1,7 +1,7 @@
 // Q2 Machines — Service Worker
 // Caches app shell for offline use
 
-const CACHE_NAME = 'q2-machines-v2';
+const CACHE_NAME = 'q2-machines-v3';
 const SHELL = [
   '/',
   '/index.html',

@@ -1656,7 +1656,7 @@ sb.auth.onAuthStateChange((event) => {
 async function initApp() {
   updateOfflineBanner();
   await newJobCard(true);
-  await openHome();
+  await openDashboard();
   await loadConfig();
   await checkPendingApprovals();
   populateSuggestType('labour');
