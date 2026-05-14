@@ -302,6 +302,27 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .cfgmgr-empty { color:var(--ink-light); font-size:13px; padding:24px 0; text-align:center; }
 .toast.loading { border-left-color:var(--gold); }
 .toast.warn    { border-left-color:var(--amber); }
+.cfgmgr-tab.admin-tab { border-style:dashed; }
+.emp-section-title { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin:0 0 10px; }
+.emp-form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.emp-form-grid .span-2 { grid-column:span 2; }
+.emp-form-grid .span-3 { grid-column:span 3; }
+.emp-form-field { display:flex; flex-direction:column; gap:3px; }
+.emp-form-field label { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--ink-light); }
+.emp-form-field input, .emp-form-field select { border:1px solid var(--border); border-radius:var(--radius); padding:7px 10px; font-size:13px; background:var(--body-bg); color:var(--ink); width:100%; box-sizing:border-box; }
+.emp-form-field input:focus, .emp-form-field select:focus { outline:none; border-color:var(--gold); }
+.emp-add-bar { display:flex; justify-content:flex-end; padding-top:12px; border-top:1px solid var(--border); margin-top:4px; }
+.emp-age-badge { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--gold-dark); background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:2px 8px; margin-left:6px; }
+.inline-usermgr { display:flex; flex-direction:column; gap:24px; }
+.inline-usermgr-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+.inline-usermgr-section-header { background:var(--ink); padding:10px 18px; display:flex; align-items:center; gap:8px; }
+.inline-usermgr-section-title { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold); flex:1; }
+.inline-usermgr-body { padding:18px; }
+.usermgr-create-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:flex-end; }
+.usermgr-create-field { display:flex; flex-direction:column; gap:3px; }
+.usermgr-create-field label { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--ink-light); }
+.usermgr-create-field input, .usermgr-create-field select { border:1px solid var(--border); border-radius:var(--radius); padding:7px 10px; font-size:13px; background:var(--body-bg); color:var(--ink); width:100%; box-sizing:border-box; }
+.usermgr-create-field input:focus { outline:none; border-color:var(--gold); }
 
 /* ── MODAL ── */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; display:none; align-items:center; justify-content:center; }
@@ -3008,20 +3029,220 @@ let cfgActiveType = 'labour';
 function openConfigManager() {
   document.getElementById('cfgmgr-overlay').classList.add('show');
   const tabs = document.getElementById('cfgmgr-tabs');
-  tabs.innerHTML = Object.entries(CONFIG_TYPES).map(([k,v]) =>
-    `<button class="cfgmgr-tab${k===cfgActiveType?' active':''}" onclick="switchCfgTab('${k}')">${v.label}</button>`
-  ).join('');
+  tabs.innerHTML = Object.entries(CONFIG_TYPES)
+    .filter(([,v]) => !v.adminOnly || currentRole === 'admin')
+    .map(([k,v]) =>
+      `<button class="cfgmgr-tab${k===cfgActiveType?' active':''}${v.adminOnly?' admin-tab':''}" onclick="switchCfgTab('${k}')">${v.label}</button>`
+    ).join('');
   renderConfigTable(cfgActiveType);
 }
 function closeConfigManager() { document.getElementById('cfgmgr-overlay').classList.remove('show'); }
 function switchCfgTab(type) {
   cfgActiveType = type;
-  document.querySelectorAll('.cfgmgr-tab').forEach(t => t.classList.toggle('active', t.textContent === CONFIG_TYPES[type].label));
+  document.querySelectorAll('.cfgmgr-tab').forEach(t => t.classList.toggle('active', t.onclick?.toString().includes(`'${type}'`)));
   renderConfigTable(type);
+}
+
+// ── EMPLOYEES PANEL ──────────────────────────────────────────────
+async function renderEmployeesPanel() {
+  const body = document.getElementById('cfgmgr-body');
+  body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
+  const { data, error } = await sb.from('employees').select('*').order('name');
+  if (error) { body.innerHTML = `<div class="cfgmgr-empty">Error: ${error.message}</div>`; return; }
+
+  function calcAge(dob) {
+    if (!dob) return '—';
+    const d = new Date(dob), n = new Date();
+    let age = n.getFullYear() - d.getFullYear();
+    if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) age--;
+    return age;
+  }
+
+  const rows = (data||[]).map(e => `
+    <tr id="emprow-${e.id}">
+      <td><input class="cfgmgr-input" data-field="name"               data-id="${e.id}" type="text"  value="${escHtml(e.name||'')}"></td>
+      <td><input class="cfgmgr-input" data-field="date_of_birth"      data-id="${e.id}" type="date"  value="${e.date_of_birth||''}"><span class="emp-age-badge" id="age-${e.id}">${calcAge(e.date_of_birth)} yrs</span></td>
+      <td><input class="cfgmgr-input" data-field="date_of_employment" data-id="${e.id}" type="date"  value="${e.date_of_employment||''}"></td>
+      <td><input class="cfgmgr-input" data-field="job_classification" data-id="${e.id}" type="text"  value="${escHtml(e.job_classification||'')}"></td>
+      <td><input class="cfgmgr-input" data-field="nationality"        data-id="${e.id}" type="text"  value="${escHtml(e.nationality||'')}"></td>
+      <td><input class="cfgmgr-input" data-field="contact_no"         data-id="${e.id}" type="text"  value="${escHtml(e.contact_no||'')}"></td>
+      <td><input class="cfgmgr-input" data-field="email"              data-id="${e.id}" type="email" value="${escHtml(e.email||'')}"></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;color:var(--green);" onclick="saveEmployee('${e.id}')">✓ Save</button>
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;color:var(--red);margin-left:4px;" onclick="deleteEmployee('${e.id}')">✕</button>
+      </td>
+    </tr>`).join('');
+
+  body.innerHTML = `
+    <p class="emp-section-title">Employee Records</p>
+    <table class="cfgmgr-table">
+      <thead><tr>
+        <th>Name</th><th>Date of Birth</th><th>Employment Date</th>
+        <th>Classification</th><th>Nationality</th><th>Contact #</th><th>Email</th><th style="width:120px;"></th>
+      </tr></thead>
+      <tbody>${rows || '<tr><td colspan="8" class="cfgmgr-empty">No employees yet.</td></tr>'}</tbody>
+    </table>
+
+    <div style="margin-top:28px;">
+      <p class="emp-section-title">Add New Employee</p>
+      <div class="emp-form-grid">
+        <div class="emp-form-field"><label>Full Name *</label><input type="text"  id="emp-name"     placeholder="e.g. John Smith"></div>
+        <div class="emp-form-field"><label>Job Classification</label><input type="text" id="emp-class" placeholder="e.g. Machinist"></div>
+        <div class="emp-form-field"><label>Nationality</label><input type="text" id="emp-nat" placeholder="e.g. Trinidadian"></div>
+        <div class="emp-form-field"><label>Date of Birth</label><input type="date" id="emp-dob"></div>
+        <div class="emp-form-field"><label>Date of Employment</label><input type="date" id="emp-doe"></div>
+        <div class="emp-form-field"><label>Contact #</label><input type="text" id="emp-contact" placeholder="e.g. 868-555-0100"></div>
+        <div class="emp-form-field span-2"><label>Address</label><input type="text" id="emp-address" placeholder="Street, City, Country"></div>
+        <div class="emp-form-field"><label>Email</label><input type="email" id="emp-email" placeholder="e.g. john@example.com"></div>
+        <div class="emp-form-field"><label>Next of Kin</label><input type="text" id="emp-nok" placeholder="Full name"></div>
+        <div class="emp-form-field span-2"><label>Next of Kin Contact</label><input type="text" id="emp-nok-contact" placeholder="Phone or email"></div>
+      </div>
+      <div class="emp-add-bar">
+        <button class="btn btn-save" style="padding:7px 20px;" onclick="addEmployee()">＋ Add Employee</button>
+      </div>
+    </div>`;
+}
+
+async function addEmployee() {
+  const name = document.getElementById('emp-name').value.trim();
+  if (!name) { showToast('⚠ Full Name is required.', 'warn'); document.getElementById('emp-name').focus(); return; }
+  const payload = {
+    name,
+    job_classification:  document.getElementById('emp-class').value.trim()    || null,
+    nationality:         document.getElementById('emp-nat').value.trim()       || null,
+    date_of_birth:       document.getElementById('emp-dob').value              || null,
+    date_of_employment:  document.getElementById('emp-doe').value              || null,
+    contact_no:          document.getElementById('emp-contact').value.trim()   || null,
+    address:             document.getElementById('emp-address').value.trim()   || null,
+    email:               document.getElementById('emp-email').value.trim()     || null,
+    next_of_kin:         document.getElementById('emp-nok').value.trim()       || null,
+    next_of_kin_contact: document.getElementById('emp-nok-contact').value.trim() || null,
+    created_by:          currentUserId,
+  };
+  const { error } = await sb.from('employees').insert(payload);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Employee added.', 'success');
+  await renderEmployeesPanel();
+}
+
+async function saveEmployee(id) {
+  const payload = { updated_at: new Date().toISOString() };
+  document.querySelectorAll(`#emprow-${id} [data-field]`).forEach(input => {
+    payload[input.dataset.field] = input.value.trim() || null;
+  });
+  const { error } = await sb.from('employees').update(payload).eq('id', id);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Employee saved.', 'success');
+}
+
+async function deleteEmployee(id) {
+  try { await showConfirm('Delete Employee', 'Permanently remove this employee record?', 'Delete'); }
+  catch(e) { return; }
+  const { error } = await sb.from('employees').delete().eq('id', id);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Employee deleted.', 'success');
+  await renderEmployeesPanel();
+}
+
+// ── USERS PANEL (inline) ──────────────────────────────────────────
+async function renderUsersPanel() {
+  const body = document.getElementById('cfgmgr-body');
+  body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
+  let userRows = '<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--ink-light);font-size:12px;">Loading…</td></tr>';
+  try {
+    const { data, error } = await sb.from('profiles').select('id,username,role,created_at').order('created_at');
+    if (error) throw error;
+    if (!data || !data.length) {
+      userRows = '<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--ink-light);font-size:12px;">No users found.</td></tr>';
+    } else {
+      userRows = data.map(u => {
+        const isSelf = u.id === currentUserId;
+        const opts = ['user','admin'].map(r => `<option value="${r}"${u.role===r?' selected':''}>${r}</option>`).join('');
+        const since = u.created_at ? new Date(u.created_at).toLocaleDateString('en-TT') : '—';
+        return `<tr>
+          <td>${escHtml(u.username||'—')}${isSelf?' <span style="font-size:10px;color:var(--ink-light);">(you)</span>':''}</td>
+          <td><select class="usermgr-role-select" onchange="updateUserRole('${u.id}',this.value)"${isSelf?' disabled title="Cannot change your own role"':''}>
+            ${opts}</select></td>
+          <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--ink-light);">${since}</td>
+          <td></td>
+        </tr>`;
+      }).join('');
+    }
+  } catch(e) {
+    userRows = `<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--red);font-size:12px;">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+
+  body.innerHTML = `
+    <div class="inline-usermgr">
+      <div class="inline-usermgr-section">
+        <div class="inline-usermgr-section-header">
+          <div class="inline-usermgr-section-title">Create New User</div>
+        </div>
+        <div class="inline-usermgr-body">
+          <div class="usermgr-create-grid">
+            <div class="usermgr-create-field"><label>Username *</label><input type="text"     id="new-user-name"  placeholder="Display name"></div>
+            <div class="usermgr-create-field"><label>Email *</label>   <input type="email"    id="new-user-email" placeholder="user@example.com"></div>
+            <div class="usermgr-create-field"><label>Password *</label><input type="password" id="new-user-pw"    placeholder="Min 6 characters"></div>
+            <div class="usermgr-create-field"><label>Role</label>
+              <select id="new-user-role"><option value="user">user</option><option value="admin">admin</option></select>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-save" style="padding:7px 20px;" onclick="createNewUserInline()">＋ Create User</button>
+            <span id="usermgr-create-msg" style="font-size:12px;"></span>
+          </div>
+        </div>
+      </div>
+      <div class="inline-usermgr-section">
+        <div class="inline-usermgr-section-header">
+          <div class="inline-usermgr-section-title">Existing Users</div>
+          <button class="btn-topbar" style="font-size:10px;padding:2px 8px;" onclick="renderUsersPanel()">↺</button>
+        </div>
+        <div class="inline-usermgr-body" style="padding:0;">
+          <table class="cfgmgr-table">
+            <thead><tr><th>Username</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+            <tbody>${userRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function createNewUserInline() {
+  const email    = document.getElementById('new-user-email').value.trim();
+  const name     = document.getElementById('new-user-name').value.trim();
+  const password = document.getElementById('new-user-pw').value;
+  const role     = document.getElementById('new-user-role').value;
+  const msgEl    = document.getElementById('usermgr-create-msg');
+  msgEl.style.color = 'var(--ink-light)';
+  msgEl.textContent = '';
+  if (!email)                           { msgEl.style.color='var(--red)'; msgEl.textContent='Email is required.'; return; }
+  if (!password || password.length < 6) { msgEl.style.color='var(--red)'; msgEl.textContent='Password must be at least 6 characters.'; return; }
+  if (!name)                            { msgEl.style.color='var(--red)'; msgEl.textContent='Username is required.'; return; }
+  msgEl.textContent = 'Creating…';
+  try {
+    const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password, options:{ data:{ username:name } } });
+    if (signUpError) throw signUpError;
+    const uid = signUpData?.user?.id;
+    if (uid) {
+      await sb.from('profiles').upsert({ id:uid, username:name, role }, { onConflict:'id' });
+    }
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = `✓ User "${name}" created.`;
+    document.getElementById('new-user-email').value = '';
+    document.getElementById('new-user-name').value  = '';
+    document.getElementById('new-user-pw').value    = '';
+    await renderUsersPanel();
+  } catch(err) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = err.message || 'Failed to create user.';
+  }
 }
 
 async function renderConfigTable(type) {
   const cfg = CONFIG_TYPES[type];
+  if (cfg.custom === 'employees') { await renderEmployeesPanel(); return; }
+  if (cfg.custom === 'users')     { await renderUsersPanel();     return; }
   const body = document.getElementById('cfgmgr-body');
   body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
   const { data, error } = await sb.from(cfg.table).select('*').eq('status','approved').order('sort_order');
@@ -3104,6 +3325,8 @@ const CONFIG_TYPES = {
   consumables:   { label:'Consumable',            table:'config_consumables',  fields:[{k:'item_name',label:'Item Name',type:'text',req:true},{k:'category',label:'Category',type:'text'},{k:'unit',label:'Unit',type:'text'},{k:'default_unit_cost_ttd',label:'Default Unit Cost (TTD)',type:'number'}] },
   tasks:         { label:'Task Type',             table:'config_tasks',        fields:[{k:'task_name',label:'Task Name',type:'text',req:true},{k:'category',label:'Category',type:'text'}] },
   qc_checklists: { label:'QC Checklist Item',     table:'config_qc_checklists',fields:[{k:'checklist_item',label:'Checklist Item',type:'text',req:true},{k:'job_type',label:'Job Type (or "All")',type:'text'}] },
+  employees:     { label:'Employees',             custom:'employees', skipApprovals:true },
+  users:         { label:'User Accounts',         custom:'users',     skipApprovals:true, adminOnly:true },
 };
 
 function openSuggestModal(preType) {
@@ -3158,7 +3381,8 @@ async function submitSuggestion() {
 async function checkPendingApprovals() {
   if (currentRole !== 'admin') return;
   let total = 0;
-  for (const { table } of Object.values(CONFIG_TYPES)) {
+  for (const { table, skipApprovals } of Object.values(CONFIG_TYPES)) {
+    if (skipApprovals || !table) continue;
     const { count } = await sb.from(table).select('*', { count:'exact', head:true }).eq('status','pending');
     total += count || 0;
   }
