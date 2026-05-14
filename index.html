@@ -313,6 +313,21 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .emp-form-field input:focus, .emp-form-field select:focus { outline:none; border-color:var(--gold); }
 .emp-add-bar { display:flex; justify-content:flex-end; padding-top:12px; border-top:1px solid var(--border); margin-top:4px; }
 .emp-age-badge { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--gold-dark); background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:2px 8px; margin-left:6px; }
+.equip-form { max-width:960px; }
+.equip-section { margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; }
+.equip-section-title { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin:0 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.equip-form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px 20px; }
+.equip-form-field { display:flex; flex-direction:column; gap:4px; }
+.equip-form-field label { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--ink-light); }
+.equip-form-field input, .equip-form-field select, .equip-form-field textarea { border:1px solid var(--border); border-radius:var(--radius); padding:7px 10px; font-size:13px; background:var(--body-bg); color:var(--ink); width:100%; box-sizing:border-box; }
+.equip-form-field input:focus, .equip-form-field select:focus, .equip-form-field textarea:focus { outline:none; border-color:var(--gold); }
+.equip-form-field input[readonly] { color:var(--ink-light); cursor:default; }
+.equip-form-field.span-2 { grid-column:span 2; }
+.equip-radio-group { display:flex; gap:20px; flex-wrap:wrap; padding-top:6px; }
+.equip-radio { display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+.equip-acc-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+.equip-acc-row input { flex:1; border:1px solid var(--border); border-radius:var(--radius); padding:6px 10px; font-size:13px; background:var(--body-bg); color:var(--ink); }
+.equip-acc-row input:focus { outline:none; border-color:var(--gold); }
 .inline-usermgr { display:flex; flex-direction:column; gap:24px; }
 .inline-usermgr-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
 .inline-usermgr-section-header { background:var(--ink); padding:10px 18px; display:flex; align-items:center; gap:8px; }
@@ -3252,9 +3267,290 @@ async function createNewUserInline() {
   }
 }
 
+// ── EQUIPMENT PANEL ──────────────────────────────────────────────
+let _equipmentItems = [];
+
+async function renderEquipmentPanel() {
+  const body = document.getElementById('cfgmgr-body');
+  body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
+  const { data, error } = await sb.from('config_equipment').select('*').eq('status','approved').order('sort_order');
+  if (error) { body.innerHTML = `<div class="cfgmgr-empty">Error: ${error.message}</div>`; return; }
+  _equipmentItems = data || [];
+
+  const rows = _equipmentItems.map(e => `
+    <tr>
+      <td>${escHtml(e.equipment_name||'')}</td>
+      <td>${escHtml(e.make||'—')}</td>
+      <td>${escHtml(e.model_no||'—')}</td>
+      <td>${escHtml(e.description_type||'—')}</td>
+      <td style="text-transform:capitalize;">${escHtml(e.power_type||'—')}</td>
+      <td style="text-transform:capitalize;">${escHtml(e.mobility_type||'—')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;" onclick="openEquipmentForm('${e.id}')">✎ Edit</button>
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;color:var(--red);margin-left:4px;" onclick="deleteEquipmentRecord('${e.id}','${escHtml(e.equipment_name||'')}')">✕</button>
+      </td>
+    </tr>`).join('');
+
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <p class="emp-section-title" style="margin:0;">Equipment &amp; Machines</p>
+      <button class="btn btn-save" style="padding:7px 18px;" onclick="openEquipmentForm(null)">＋ Add New</button>
+    </div>
+    <table class="cfgmgr-table">
+      <thead><tr>
+        <th>Equipment Name</th><th>Make</th><th>Model No.</th><th>Type</th><th>Power</th><th>Mobility</th>
+        <th style="width:130px;"></th>
+      </tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" class="cfgmgr-empty">No equipment records yet.</td></tr>'}</tbody>
+    </table>`;
+}
+
+function openEquipmentForm(id) {
+  const e = id ? (_equipmentItems.find(x => x.id === id) || {}) : {};
+  const body = document.getElementById('cfgmgr-body');
+
+  function calcAge(yr) {
+    if (!yr) return '';
+    const age = new Date().getFullYear() - parseInt(yr);
+    return age >= 0 ? age + ' yr' + (age !== 1 ? 's' : '') : '';
+  }
+
+  const accessories = Array.isArray(e.accessories) ? e.accessories
+    : (typeof e.accessories === 'string' ? (JSON.parse(e.accessories || '[]')) : []);
+
+  const accRows = accessories.map(a => `
+    <div class="equip-acc-row">
+      <input type="text" class="equip-acc-input" value="${escHtml(a)}" placeholder="e.g. Vise, Chuck, Tailstock">
+      <button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:11px;color:var(--red);white-space:nowrap;" onclick="removeEquipAccessory(this)">✕</button>
+    </div>`).join('');
+
+  const chk = (name, val, label) =>
+    `<label class="equip-radio"><input type="radio" name="${name}" value="${val}" ${e[name.replace('eq-','').replace('-','_')]===val?'checked':''} onchange="updateEquipConditionals()"> ${label}</label>`;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="renderEquipmentPanel()">← Back</button>
+      <p class="emp-section-title" style="margin:0;">${id ? 'Edit Equipment' : 'Add New Equipment'}</p>
+    </div>
+    <div class="equip-form">
+
+      <div class="equip-section">
+        <div class="equip-section-title">Identity</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field"><label>Equipment Name *</label><input type="text" id="eq-name" value="${escHtml(e.equipment_name||'')}" placeholder="e.g. Lathe Machine #1"></div>
+          <div class="equip-form-field"><label>Description / Type</label><input type="text" id="eq-desc-type" value="${escHtml(e.description_type||'')}" placeholder="e.g. Centre Lathe"></div>
+          <div class="equip-form-field"><label>Make</label><input type="text" id="eq-make" value="${escHtml(e.make||'')}" placeholder="e.g. Colchester"></div>
+          <div class="equip-form-field"><label>Model No.</label><input type="text" id="eq-model" value="${escHtml(e.model_no||'')}" placeholder="e.g. Student 1800"></div>
+          <div class="equip-form-field"><label>Serial Number</label><input type="text" id="eq-serial" value="${escHtml(e.serial_no||'')}" placeholder=""></div>
+          <div class="equip-form-field"><label>Shop Number</label><input type="text" id="eq-shop-no" value="${escHtml(e.shop_number||'')}" placeholder="e.g. M-01"></div>
+          <div class="equip-form-field"><label>Year of Manufacture</label>
+            <input type="number" id="eq-year" value="${e.year_of_manufacture||''}" placeholder="e.g. 2010" min="1900" max="2099" oninput="updateEquipAge()">
+          </div>
+          <div class="equip-form-field"><label>Age</label>
+            <input type="text" id="eq-age" value="${calcAge(e.year_of_manufacture)}" readonly>
+          </div>
+          <div class="equip-form-field"><label>Date of Acquisition</label><input type="date" id="eq-acquired" value="${e.date_of_acquisition||''}"></div>
+          <div class="equip-form-field"><label>Capacity / Size</label><input type="text" id="eq-capacity" value="${escHtml(e.capacity_size||'')}" placeholder="e.g. 560mm swing × 1500mm centres"></div>
+        </div>
+      </div>
+
+      <div class="equip-section">
+        <div class="equip-section-title">Rates</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field"><label>Workshop Rate (TTD/hr)</label><input type="number" id="eq-ws-rate" value="${e.workshop_rate_ttd||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"><label>Onsite Rate (TTD/hr)</label><input type="number" id="eq-os-rate" value="${e.onsite_rate_ttd||''}" placeholder="0.00" step="0.01"></div>
+        </div>
+      </div>
+
+      <div class="equip-section">
+        <div class="equip-section-title">Accessories</div>
+        <div id="equip-acc-list">${accRows}</div>
+        <button type="button" class="btn btn-outline" style="margin-top:8px;padding:5px 14px;font-size:12px;" onclick="addEquipAccessory()">＋ Add Accessory</button>
+      </div>
+
+      <div class="equip-section">
+        <div class="equip-section-title">Classification</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field">
+            <label>Power Source</label>
+            <div class="equip-radio-group">
+              <label class="equip-radio"><input type="radio" name="eq-power" value="electric" ${e.power_type==='electric'?'checked':''} onchange="updateEquipConditionals()"> Electric</label>
+              <label class="equip-radio"><input type="radio" name="eq-power" value="diesel"   ${e.power_type==='diesel'  ?'checked':''} onchange="updateEquipConditionals()"> Diesel</label>
+            </div>
+          </div>
+          <div class="equip-form-field">
+            <label>Mobility</label>
+            <div class="equip-radio-group">
+              <label class="equip-radio"><input type="radio" name="eq-mobility" value="fixed"  ${e.mobility_type==='fixed'  ?'checked':''} onchange="updateEquipConditionals()"> Fixed</label>
+              <label class="equip-radio"><input type="radio" name="eq-mobility" value="mobile" ${e.mobility_type==='mobile'?'checked':''} onchange="updateEquipConditionals()"> Mobile</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="equip-section equip-conditional" id="equip-mobile-section" style="display:none;">
+        <div class="equip-section-title">Mobile Details</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field"><label>Tyre Size</label><input type="text" id="eq-tyre-size" value="${escHtml(e.tyre_size||'')}" placeholder="e.g. 205/75R15"></div>
+          <div class="equip-form-field"><label>Tyre Qty</label><input type="number" id="eq-tyre-qty" value="${e.tyre_qty||''}" placeholder="e.g. 4" min="0"></div>
+        </div>
+      </div>
+
+      <div class="equip-section equip-conditional" id="equip-electric-section" style="display:none;">
+        <div class="equip-section-title">Electric Details</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field"><label>HP / kW</label><input type="number" id="eq-hp-kw" value="${e.hp_kw||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"><label>Voltage (V)</label><input type="number" id="eq-voltage" value="${e.voltage||''}" placeholder="e.g. 415" step="1"></div>
+          <div class="equip-form-field"><label>Amps (A)</label><input type="number" id="eq-amps" value="${e.amps||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"><label>Frequency (Hz)</label><input type="number" id="eq-freq" value="${e.frequency||''}" placeholder="e.g. 60" step="1"></div>
+          <div class="equip-form-field">
+            <label>Phase</label>
+            <div class="equip-radio-group">
+              <label class="equip-radio"><input type="radio" name="eq-phase" value="3-phase"      ${e.phase_type==='3-phase'      ?'checked':''}> 3 Phase</label>
+              <label class="equip-radio"><input type="radio" name="eq-phase" value="single-phase" ${e.phase_type==='single-phase'?'checked':''}> Single Phase</label>
+            </div>
+          </div>
+          <div class="equip-form-field span-2"><label>Additional Notes</label>
+            <textarea id="eq-elec-notes" class="cfgmgr-input" rows="2" placeholder="Any additional electrical notes…" style="resize:vertical;">${escHtml(e.electric_notes||'')}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="equip-section equip-conditional" id="equip-diesel-section" style="display:none;">
+        <div class="equip-section-title">Diesel / Fluid Servicing</div>
+        <div class="equip-form-grid">
+          <div class="equip-form-field"><label>Fuel Capacity (L)</label><input type="number" id="eq-fuel-cap" value="${e.fuel_capacity||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"></div>
+          <div class="equip-form-field"><label>Fuel Filter Number</label><input type="text" id="eq-fuel-filter-no" value="${escHtml(e.fuel_filter_no||'')}" placeholder="Part No."></div>
+          <div class="equip-form-field"><label>Fuel Filter Qty</label><input type="number" id="eq-fuel-filter-qty" value="${e.fuel_filter_qty||''}" placeholder="0" min="0"></div>
+          <div class="equip-form-field"><label>Engine Oil Filter Number</label><input type="text" id="eq-eo-filter-no" value="${escHtml(e.engine_oil_filter_no||'')}" placeholder="Part No."></div>
+          <div class="equip-form-field"><label>Engine Oil Filter Qty</label><input type="number" id="eq-eo-filter-qty" value="${e.engine_oil_filter_qty||''}" placeholder="0" min="0"></div>
+          <div class="equip-form-field"><label>Hydraulic Filter Number</label><input type="text" id="eq-hyd-filter-no" value="${escHtml(e.hydraulic_filter_no||'')}" placeholder="Part No."></div>
+          <div class="equip-form-field"><label>Hydraulic Filter Qty</label><input type="number" id="eq-hyd-filter-qty" value="${e.hydraulic_filter_qty||''}" placeholder="0" min="0"></div>
+          <div class="equip-form-field"><label>Coolant Spec</label><input type="text" id="eq-coolant-spec" value="${escHtml(e.coolant_spec||'')}" placeholder="e.g. OAT 50/50"></div>
+          <div class="equip-form-field"><label>Coolant Refill Capacity (L)</label><input type="number" id="eq-coolant-cap" value="${e.coolant_capacity||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"><label>Engine Oil Spec</label><input type="text" id="eq-eo-spec" value="${escHtml(e.engine_oil_spec||'')}" placeholder="e.g. 15W-40"></div>
+          <div class="equip-form-field"><label>Engine Oil Refill Capacity (L)</label><input type="number" id="eq-eo-cap" value="${e.engine_oil_capacity||''}" placeholder="0.00" step="0.01"></div>
+          <div class="equip-form-field"><label>Hydraulic Oil Spec</label><input type="text" id="eq-hyd-spec" value="${escHtml(e.hydraulic_oil_spec||'')}" placeholder="e.g. ISO VG 46"></div>
+          <div class="equip-form-field"><label>Hydraulic Oil Refill Capacity (L)</label><input type="number" id="eq-hyd-cap" value="${e.hydraulic_oil_capacity||''}" placeholder="0.00" step="0.01"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:20px 0 8px;">
+        <button class="btn btn-save" style="padding:8px 24px;" onclick="saveEquipmentRecord('${id||''}')">✓ ${id ? 'Save Changes' : 'Add Equipment'}</button>
+        <button class="btn btn-outline" style="padding:8px 18px;" onclick="renderEquipmentPanel()">Cancel</button>
+      </div>
+    </div>`;
+
+  updateEquipConditionals();
+}
+
+function updateEquipAge() {
+  const yr = parseInt(document.getElementById('eq-year').value);
+  const el = document.getElementById('eq-age');
+  if (!el) return;
+  if (!yr || yr < 1900) { el.value = ''; return; }
+  const age = new Date().getFullYear() - yr;
+  el.value = age >= 0 ? age + ' yr' + (age !== 1 ? 's' : '') : '';
+}
+
+function updateEquipConditionals() {
+  const power    = document.querySelector('input[name="eq-power"]:checked')?.value;
+  const mobility = document.querySelector('input[name="eq-mobility"]:checked')?.value;
+  const mSec = document.getElementById('equip-mobile-section');
+  const eSec = document.getElementById('equip-electric-section');
+  const dSec = document.getElementById('equip-diesel-section');
+  if (mSec) mSec.style.display = mobility === 'mobile'   ? '' : 'none';
+  if (eSec) eSec.style.display = power    === 'electric' ? '' : 'none';
+  if (dSec) dSec.style.display = power    === 'diesel'   ? '' : 'none';
+}
+
+function addEquipAccessory() {
+  const list = document.getElementById('equip-acc-list');
+  const div = document.createElement('div');
+  div.className = 'equip-acc-row';
+  div.innerHTML = `
+    <input type="text" class="equip-acc-input" placeholder="e.g. Vise, Chuck, Tailstock">
+    <button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:11px;color:var(--red);white-space:nowrap;" onclick="removeEquipAccessory(this)">✕</button>`;
+  list.appendChild(div);
+  div.querySelector('input').focus();
+}
+
+function removeEquipAccessory(btn) { btn.closest('.equip-acc-row').remove(); }
+
+async function saveEquipmentRecord(id) {
+  const name = document.getElementById('eq-name').value.trim();
+  if (!name) { showToast('⚠ Equipment Name is required.', 'warn'); document.getElementById('eq-name').focus(); return; }
+
+  const accessories = Array.from(document.querySelectorAll('.equip-acc-input'))
+    .map(i => i.value.trim()).filter(Boolean);
+
+  const payload = {
+    equipment_name:         name,
+    description_type:       document.getElementById('eq-desc-type').value.trim()       || null,
+    make:                   document.getElementById('eq-make').value.trim()             || null,
+    model_no:               document.getElementById('eq-model').value.trim()           || null,
+    serial_no:              document.getElementById('eq-serial').value.trim()          || null,
+    shop_number:            document.getElementById('eq-shop-no').value.trim()         || null,
+    year_of_manufacture:    parseInt(document.getElementById('eq-year').value)         || null,
+    date_of_acquisition:    document.getElementById('eq-acquired').value               || null,
+    capacity_size:          document.getElementById('eq-capacity').value.trim()        || null,
+    workshop_rate_ttd:      parseFloat(document.getElementById('eq-ws-rate').value)    || 0,
+    onsite_rate_ttd:        parseFloat(document.getElementById('eq-os-rate').value)    || 0,
+    accessories,
+    power_type:             document.querySelector('input[name="eq-power"]:checked')?.value    || null,
+    mobility_type:          document.querySelector('input[name="eq-mobility"]:checked')?.value || null,
+    tyre_size:              document.getElementById('eq-tyre-size').value.trim()        || null,
+    tyre_qty:               parseInt(document.getElementById('eq-tyre-qty').value)     || null,
+    hp_kw:                  parseFloat(document.getElementById('eq-hp-kw').value)      || null,
+    voltage:                parseFloat(document.getElementById('eq-voltage').value)    || null,
+    amps:                   parseFloat(document.getElementById('eq-amps').value)       || null,
+    frequency:              parseFloat(document.getElementById('eq-freq').value)       || null,
+    phase_type:             document.querySelector('input[name="eq-phase"]:checked')?.value    || null,
+    electric_notes:         document.getElementById('eq-elec-notes').value.trim()      || null,
+    fuel_capacity:          parseFloat(document.getElementById('eq-fuel-cap').value)         || null,
+    fuel_filter_no:         document.getElementById('eq-fuel-filter-no').value.trim()        || null,
+    fuel_filter_qty:        parseInt(document.getElementById('eq-fuel-filter-qty').value)    || null,
+    engine_oil_filter_no:   document.getElementById('eq-eo-filter-no').value.trim()         || null,
+    engine_oil_filter_qty:  parseInt(document.getElementById('eq-eo-filter-qty').value)     || null,
+    hydraulic_filter_no:    document.getElementById('eq-hyd-filter-no').value.trim()        || null,
+    hydraulic_filter_qty:   parseInt(document.getElementById('eq-hyd-filter-qty').value)    || null,
+    coolant_spec:           document.getElementById('eq-coolant-spec').value.trim()         || null,
+    coolant_capacity:       parseFloat(document.getElementById('eq-coolant-cap').value)     || null,
+    engine_oil_spec:        document.getElementById('eq-eo-spec').value.trim()              || null,
+    engine_oil_capacity:    parseFloat(document.getElementById('eq-eo-cap').value)          || null,
+    hydraulic_oil_spec:     document.getElementById('eq-hyd-spec').value.trim()             || null,
+    hydraulic_oil_capacity: parseFloat(document.getElementById('eq-hyd-cap').value)         || null,
+    status: 'approved',
+    updated_at: new Date().toISOString(),
+  };
+
+  let error;
+  if (id) {
+    ({ error } = await sb.from('config_equipment').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('config_equipment').insert({ ...payload, submitted_by: currentUserId, is_active: true }));
+  }
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast(id ? '✓ Equipment updated.' : '✓ Equipment added.', 'success');
+  await loadConfig();
+  await renderEquipmentPanel();
+}
+
+async function deleteEquipmentRecord(id, name) {
+  try { await showConfirm('Delete Equipment', `Permanently remove "${name}"?`, 'Delete', true); }
+  catch(e) { return; }
+  const { error } = await sb.from('config_equipment').delete().eq('id', id);
+  if (error) { showToast('✗ ' + error.message, 'error'); return; }
+  showToast('✓ Equipment deleted.', 'success');
+  await loadConfig();
+  await renderEquipmentPanel();
+}
+
 async function renderConfigTable(type) {
   const cfg = CONFIG_TYPES[type];
   if (cfg.custom === 'employees') { await renderEmployeesPanel(); return; }
+  if (cfg.custom === 'equipment') { await renderEquipmentPanel(); return; }
   if (cfg.custom === 'users')     { await renderUsersPanel();     return; }
   const body = document.getElementById('cfgmgr-body');
   body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
@@ -3333,7 +3629,7 @@ async function addCfgRow(table, type) {
 // ── CONFIG SUGGEST & APPROVALS ────────────────────
 const CONFIG_TYPES = {
   labour:        { label:'Labour Classification', table:'config_labour',       fields:[{k:'classification',label:'Classification',type:'text',req:true},{k:'workshop_rate_ttd',label:'Workshop Rate (TTD/hr)',type:'number'},{k:'onsite_rate_ttd',label:'Onsite Rate (TTD/hr)',type:'number'}] },
-  equipment:     { label:'Equipment / Machine',   table:'config_equipment',    fields:[{k:'equipment_name',label:'Equipment Name',type:'text',req:true},{k:'asset_no',label:'Asset No.',type:'text'},{k:'workshop_rate_ttd',label:'Workshop Rate (TTD/hr)',type:'number'},{k:'onsite_rate_ttd',label:'Onsite Rate (TTD/hr)',type:'number'}] },
+  equipment:     { label:'Equipment / Machine',   table:'config_equipment',    custom:'equipment', skipApprovals:true },
   materials:     { label:'Material / Stock Item', table:'config_materials',    fields:[{k:'item_name',label:'Item Name',type:'text',req:true},{k:'stock_code',label:'Stock Code',type:'text'},{k:'unit',label:'Unit (e.g. kg, m, pcs)',type:'text'},{k:'default_unit_cost_ttd',label:'Default Unit Cost (TTD)',type:'number'}] },
   consumables:   { label:'Consumable',            table:'config_consumables',  fields:[{k:'item_name',label:'Item Name',type:'text',req:true},{k:'category',label:'Category',type:'text'},{k:'unit',label:'Unit',type:'text'},{k:'default_unit_cost_ttd',label:'Default Unit Cost (TTD)',type:'number'}] },
   tasks:         { label:'Task Type',             table:'config_tasks',        fields:[{k:'task_name',label:'Task Name',type:'text',req:true},{k:'category',label:'Category',type:'text'}] },
@@ -3713,7 +4009,6 @@ async function createNewUser() {
       <label>Item Type *</label>
       <select id="suggest-type" onchange="populateSuggestType(this.value)">
         <option value="labour">Labour Classification</option>
-        <option value="equipment">Equipment / Machine</option>
         <option value="materials">Material / Stock Item</option>
         <option value="consumables">Consumable</option>
         <option value="tasks">Task Type</option>
