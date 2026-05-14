@@ -2937,6 +2937,7 @@ async function newJobCard(skipConfirm) {
   buildQCChecklist('');
   addLabourRow(); addEquipRow(); addMaterialRow(); addConsumableRow(); addSubRow();
   updateCostSummary();
+  currentJobId = null;
   clearAuditLog();
   clearDraft();
   markClean();
