@@ -601,12 +601,12 @@ Templates pre-populate:
 
 ---
 
-## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 2)
+## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 3)
 
 ### Live System — `https://www.q2m.io/jobs/`
 - **Service worker:** `CACHE_NAME = 'q2-machines-v3'`, network-first for HTML
 - **Supabase project:** `pnrfcusipgojhkuvtjio`
-- **Active file:** `index.html` (~3500 lines). `index1.html` is archive — do not edit.
+- **Active file:** `index.html` (~3800 lines). `index1.html` is archive — do not edit.
 
 ### Login Flow
 `doLogin()` → `initApp()` → `openDashboard()`
@@ -614,6 +614,10 @@ Templates pre-populate:
 `initApp()` is now isolated from the auth `try/catch` in both `doLogin()` and the `DOMContentLoaded` session-restore path. Auth errors (bad credentials, profile load failure) still display on the login form. Errors thrown inside `initApp()` after a successful login surface via `showToast()` and `console.error()` — no more blank screen with no feedback.
 
 **Note:** `newJobCard(true)` was removed from `initApp()`. It was burning a job number on every login before the dashboard opened. Job numbers now only increment when the user explicitly clicks New Job.
+
+**Job number integrity:** `fetchNewJobNo()` calls `sb.rpc('next_job_no')` which permanently increments the Supabase sequence. Two additional gaps were fixed in session 3:
+- `duplicateJob()` was calling `fetchNewJobNo()` explicitly then calling `newJobCard(true)` (which calls it again) — two increments per duplicate. Fixed by removing the pre-fetch; `newJobCard()` fetches internally.
+- `deleteJob()` called `newJobCard(true)` after deletion, consuming a number that was discarded if the user navigated away. Fixed by redirecting to `openDashboard()` after delete instead.
 
 ### Dashboard
 The new dashboard (`dashboard-overlay`, opened by `openDashboard()`) is the primary landing screen after login. It contains:
@@ -637,21 +641,35 @@ Shown/hidden by `setRole()` on login:
 - Dashboard header: Config button (`id="cfgmgr-btn"`)
 - Job form: Delete Job button, Cost unlock button
 
-Approval badge count is driven by `checkPendingApprovals()` — queries config tables for `status='pending'`. Custom tabs (`employees`, `users`) are flagged `skipApprovals:true` and excluded from this query.
+Approval badge count is driven by `checkPendingApprovals()` — queries config tables for `status='pending'`. Custom tabs (`employees`, `users`, `equipment`) are flagged `skipApprovals:true` and excluded from this query.
 
 ### Config Manager
 8 tabs, accessible from the dashboard header (admin) or ⚙ Config button:
 
-| Tab | Table | Notes |
-|-----|-------|-------|
-| Labour Classification | `config_labour` | workshop & onsite rates |
-| Equipment / Machine | `config_equipment` | asset no, rates |
-| Material / Stock Item | `config_materials` | unit, default cost |
-| Consumable | `config_consumables` | category, unit, cost |
-| Task Type | `config_tasks` | category |
-| QC Checklist Item | `config_qc_checklists` | job type filter |
-| Employees | `employees` | full CRUD, age calculated from DOB |
-| User Accounts | `profiles` + auth | admin only, dashed tab border |
+| Tab | Table | Renderer | Notes |
+|-----|-------|----------|-------|
+| Labour Classification | `config_labour` | generic | workshop & onsite rates |
+| Equipment / Machine | `config_equipment` | custom | full detail form, see below |
+| Material / Stock Item | `config_materials` | generic | unit, default cost |
+| Consumable | `config_consumables` | generic | category, unit, cost |
+| Task Type | `config_tasks` | generic | category |
+| QC Checklist Item | `config_qc_checklists` | generic | job type filter |
+| Employees | `employees` | custom | full CRUD, age calculated from DOB |
+| User Accounts | `profiles` + auth | custom | admin only, dashed tab border |
+
+**Equipment / Machine tab** uses a custom panel renderer (`renderEquipmentPanel()` / `openEquipmentForm(id)`). The list view shows a summary table (Name, Make, Model, Type, Power, Mobility). Edit/Add opens a full detail form with sections:
+
+- **Identity:** equipment_name *(required)*, description_type, make, model_no, serial_no, shop_number, year_of_manufacture, age *(auto-calculated, read-only)*, date_of_acquisition, capacity_size
+- **Rates:** workshop_rate_ttd, onsite_rate_ttd *(these feed the job form dropdowns via `loadConfig()`)*
+- **Accessories:** dynamic multi-entry list stored as `jsonb` array
+- **Classification:** power_type (electric | diesel), mobility_type (fixed | mobile) — radio buttons that toggle conditional sections
+- **Mobile Details** *(shown when mobile)*: tyre_size, tyre_qty
+- **Electric Details** *(shown when electric)*: hp_kw, voltage, amps, frequency, phase_type (3-phase | single-phase), electric_notes
+- **Diesel / Fluid Servicing** *(shown when diesel)*: fuel_capacity, fuel_filter_no/qty, engine_oil_filter_no/qty, hydraulic_filter_no/qty, coolant_spec/capacity, engine_oil_spec/capacity, hydraulic_oil_spec/capacity
+
+The Supabase migration `expand_config_equipment_fields` added 32 new columns to `config_equipment` (applied May 14, 2026). `loadConfig()` still maps only `equipment_name`, `asset_no`, `workshop_rate_ttd`, `onsite_rate_ttd` — the job form dropdowns are unaffected by the new columns.
+
+Equipment is removed from the Suggest modal (it previously offered a 4-field form that would break with the new schema). All equipment management goes through the Config Manager directly.
 
 **Employees table** (`employees`): name, date_of_birth, date_of_employment, address, contact_no, email, job_classification, nationality, next_of_kin, next_of_kin_contact, created_at, updated_at, created_by. Age is calculated client-side from DOB — not stored.
 
@@ -673,6 +691,10 @@ Approval badge count is driven by `checkPendingApprovals()` — queries config t
 - Inline User Accounts form non-functional → all five form field IDs (`new-user-*`, `usermgr-create-msg`) duplicated in the hidden legacy `usermgr-overlay`; `getElementById` always returned the hidden elements, making validation errors invisible and reading empty field values; fixed by namespacing inline panel to `inu-*` IDs
 - `createNewUserInline()` missing admin session save/restore → Supabase `signUp` switched active session to new user, silently logging out the admin; fixed by capturing and restoring the admin session around the `signUp` call
 
+**Session 3**
+- `duplicateJob()` called `fetchNewJobNo()` then `newJobCard(true)` (which calls it again) → two job numbers consumed per duplicate, causing non-sequential numbering; fixed by removing the explicit pre-fetch from `duplicateJob()`
+- `deleteJob()` called `newJobCard(true)` after deletion → consumed a job number immediately regardless of whether the user intended to create a new job; fixed by redirecting to `openDashboard()` after delete
+
 ---
 
 ## NEXT STEPS
@@ -681,13 +703,15 @@ Approval badge count is driven by `checkPendingApprovals()` — queries config t
 2. ✅ System stabilisation: login flow fixed, dashboard wired, toolbar consolidated
 3. ✅ Config Manager: Employees and User Accounts tabs added
 4. ✅ Bug fixes: initApp error swallow, inline user form duplicate IDs, session restore
-5. ⏳ Development: Build planning tools (Charter through H&S)
-6. ⏳ Development: Build approval workflow & baseline snapshot
-7. ⏳ Development: Build tracking tools (Gantt through Incidents)
-8. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
-9. ⏳ Templates: Create standard project templates
-10. ⏳ Deployment: Test on live Q2M jobs
-11. ⏳ Phase 2: Client portal (future build)
+5. ✅ Bug fixes: job number gaps on duplicate and delete
+6. ✅ Config Manager: Equipment / Machine tab expanded (32 new fields, custom form with conditional sections)
+7. ⏳ Development: Build planning tools (Charter through H&S)
+8. ⏳ Development: Build approval workflow & baseline snapshot
+9. ⏳ Development: Build tracking tools (Gantt through Incidents)
+10. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
+11. ⏳ Templates: Create standard project templates
+12. ⏳ Deployment: Test on live Q2M jobs
+13. ⏳ Phase 2: Client portal (future build)
 
 ---
 
