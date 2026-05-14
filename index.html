@@ -3209,6 +3209,8 @@ async function deleteEmployee(id) {
 }
 
 // ── USERS PANEL (inline) ──────────────────────────────────────────
+let _userMap = {};
+
 async function renderUsersPanel() {
   const body = document.getElementById('cfgmgr-body');
   body.innerHTML = '<div class="cfgmgr-empty">Loading…</div>';
@@ -3216,30 +3218,30 @@ async function renderUsersPanel() {
   try {
     const { data, error } = await sb.from('profiles').select('id,username,email,role,blocked,created_at').order('created_at');
     if (error) throw error;
+    _userMap = {};
     if (!data || !data.length) {
       userRows = '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--ink-light);font-size:12px;">No users found.</td></tr>';
     } else {
+      data.forEach(u => { _userMap[u.id] = u; });
       userRows = data.map(u => {
-        const isSelf   = u.id === currentUserId;
+        const isSelf    = u.id === currentUserId;
         const isBlocked = !!u.blocked;
         const opts  = ['user','admin'].map(r => `<option value="${r}"${u.role===r?' selected':''}>${r}</option>`).join('');
         const since = u.created_at ? new Date(u.created_at).toLocaleDateString('en-TT') : '—';
         const badge = isBlocked
           ? `<span class="user-status-badge blocked">Blocked</span>`
           : `<span class="user-status-badge active">Active</span>`;
-        const blockBtn = isSelf ? '' : isBlocked
-          ? `<button class="user-action-btn" onclick="toggleUserBlocked('${u.id}',true)" title="Unblock user">Unblock</button>`
-          : `<button class="user-action-btn danger" onclick="toggleUserBlocked('${u.id}',false)" title="Block user">Block</button>`;
+        const blockBtn = isSelf ? '' : `<button class="user-action-btn${isBlocked ? '' : ' danger'}" onclick="toggleUserBlocked('${u.id}')">${isBlocked ? 'Unblock' : 'Block'}</button>`;
         return `<tr>
           <td>${escHtml(u.username||'—')}${isSelf?' <span style="font-size:10px;color:var(--ink-light);">(you)</span>':''}</td>
           <td style="font-size:12px;color:var(--ink-light);">${escHtml(u.email||'—')}</td>
           <td><select class="usermgr-role-select" onchange="updateUserRole('${u.id}',this.value)"${isSelf?' disabled title="Cannot change your own role"':''}>${opts}</select></td>
           <td>${badge}</td>
           <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--ink-light);">${since}</td>
-          <td style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:6px 10px;">
-            <button class="user-action-btn" onclick="openEditUserModal('${u.id}','${escHtml(u.username||'')}','${u.role}','${escHtml(u.email||'')}',${isBlocked})">Edit</button>
+          <td><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+            <button class="user-action-btn" onclick="openEditUserModal('${u.id}')">Edit</button>
             ${blockBtn}
-          </td>
+          </div></td>
         </tr>`;
       }).join('');
     }
@@ -4015,11 +4017,13 @@ async function updateUserRole(userId, newRole) {
   }
 }
 
-function openEditUserModal(uid, username, role, email, blocked) {
+function openEditUserModal(uid) {
+  const u = _userMap[uid];
+  if (!u) { showToast('⚠ User data not found. Refresh the panel.', 'warn'); return; }
   document.getElementById('eum-uid').value   = uid;
-  document.getElementById('eum-name').value  = username;
-  document.getElementById('eum-email').value = email;
-  document.getElementById('eum-role').value  = role;
+  document.getElementById('eum-name').value  = u.username || '';
+  document.getElementById('eum-email').value = u.email    || '';
+  document.getElementById('eum-role').value  = u.role     || 'user';
   document.getElementById('eum-msg').textContent = '';
   document.getElementById('edit-user-modal').classList.add('show');
 }
@@ -4043,12 +4047,15 @@ async function saveUserEdit() {
   }
 }
 
-async function toggleUserBlocked(uid, currentlyBlocked) {
+async function toggleUserBlocked(uid) {
+  const u = _userMap[uid];
+  if (!u) { showToast('⚠ User data not found. Refresh the panel.', 'warn'); return; }
+  const currentlyBlocked = !!u.blocked;
   const action = currentlyBlocked ? 'unblock' : 'block';
   try {
     await showConfirm(
       currentlyBlocked ? 'Unblock User' : 'Block User',
-      currentlyBlocked ? 'Allow this user to sign in again?' : 'Prevent this user from signing in? They will be signed out on their next request.',
+      currentlyBlocked ? 'Allow this user to sign in again?' : 'Prevent this user from signing in?',
       currentlyBlocked ? 'Unblock' : 'Block'
     );
   } catch(e) { return; }
