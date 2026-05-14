@@ -601,12 +601,14 @@ Templates pre-populate:
 ### Live System — `https://www.q2m.io/jobs/`
 - **Service worker:** `CACHE_NAME = 'q2-machines-v3'`, network-first for HTML
 - **Supabase project:** `pnrfcusipgojhkuvtjio`
-- **Active file:** `index.html` (~3270 lines). `index1.html` is archive — do not edit.
+- **Active file:** `index.html` (~3500 lines). `index1.html` is archive — do not edit.
 
 ### Login Flow
-`doLogin()` → `initApp()` → `newJobCard(true)` → `openDashboard()`
+`doLogin()` → `initApp()` → `openDashboard()`
 
 `doLogin()` wraps `initApp()` in a try/catch — any JS error thrown inside `initApp()` is silently swallowed. The error message is set on the login form element which is already hidden, giving a blank screen with no feedback. This is a known fragility.
+
+**Note:** `newJobCard(true)` was removed from `initApp()`. It was burning a job number on every login before the dashboard opened. Job numbers now only increment when the user explicitly clicks New Job.
 
 ### Dashboard
 The new dashboard (`dashboard-overlay`, opened by `openDashboard()`) is the primary landing screen after login. It contains:
@@ -630,7 +632,30 @@ Shown/hidden by `setRole()` on login:
 - Dashboard header: Config button (`id="cfgmgr-btn"`)
 - Job form: Delete Job button, Cost unlock button
 
-Approval badge count is driven by `checkPendingApprovals()` — queries all `config_*` tables for `status='pending'`.
+Approval badge count is driven by `checkPendingApprovals()` — queries config tables for `status='pending'`. Custom tabs (`employees`, `users`) are flagged `skipApprovals:true` and excluded from this query.
+
+### Config Manager
+8 tabs, accessible from the dashboard header (admin) or ⚙ Config button:
+
+| Tab | Table | Notes |
+|-----|-------|-------|
+| Labour Classification | `config_labour` | workshop & onsite rates |
+| Equipment / Machine | `config_equipment` | asset no, rates |
+| Material / Stock Item | `config_materials` | unit, default cost |
+| Consumable | `config_consumables` | category, unit, cost |
+| Task Type | `config_tasks` | category |
+| QC Checklist Item | `config_qc_checklists` | job type filter |
+| Employees | `employees` | full CRUD, age calculated from DOB |
+| User Accounts | `profiles` + auth | admin only, dashed tab border |
+
+**Employees table** (`employees`): name, date_of_birth, date_of_employment, address, contact_no, email, job_classification, nationality, next_of_kin, next_of_kin_contact, created_at, updated_at, created_by. Age is calculated client-side from DOB — not stored.
+
+**User Accounts tab** (admin only): inline create-user form (calls `sb.auth.signUp` + upserts `profiles`) and user list with role selector. Uses `createNewUserInline()` — separate from the legacy `createNewUser()` which is still wired to the standalone `usermgr-overlay`.
+
+### Known Bugs Fixed (this session)
+- `clearAuditLog` / `addAuditEntry` undefined → ReferenceError silently blocked `openDashboard()` on login
+- `currentJobId` not reset in `newJobCard()` → second job save overwrote first job's record
+- Job number consumed on every login → removed eager `newJobCard(true)` from `initApp()`
 
 ---
 
@@ -638,11 +663,12 @@ Approval badge count is driven by `checkPendingApprovals()` — queries all `con
 
 1. ✅ Design complete (this document)
 2. ✅ System stabilisation: login flow fixed, dashboard wired, toolbar consolidated
-3. ⏳ Development: Build planning tools (Charter through H&S)
-4. ⏳ Development: Build approval workflow & baseline snapshot
-5. ⏳ Development: Build tracking tools (Gantt through Incidents)
-6. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
-7. ⏳ Templates: Create standard project templates
+3. ✅ Config Manager: Employees and User Accounts tabs added
+4. ⏳ Development: Build planning tools (Charter through H&S)
+5. ⏳ Development: Build approval workflow & baseline snapshot
+6. ⏳ Development: Build tracking tools (Gantt through Incidents)
+7. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
+8. ⏳ Templates: Create standard project templates
 8. ⏳ Deployment: Test on live Q2M jobs
 9. ⏳ Phase 2: Client portal (future build)
 
