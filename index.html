@@ -1995,8 +1995,8 @@ async function deleteJob() {
     const { error } = await sb.from('jobs').delete().eq('id', currentJobId);
     if (error) throw error;
     currentJobId = null;
-    await newJobCard(true);
     showToast('🗑 Job ' + jobNo + ' deleted.', 'success');
+    await openDashboard();
   } catch(err) {
     showToast('✗ Delete failed: ' + (err.message || err), 'error');
   }
@@ -2987,12 +2987,10 @@ async function duplicateJob() {
     catch(e) { return; }
   }
   const original = collectFormData();
-  const newJobNo = await fetchNewJobNo();
-  // Clear and load the duplicate
+  // Clear and load the duplicate — newJobCard fetches the job number internally
   await newJobCard(true);
   // Restore all data except job number, status, dates
   const parse = str => { try { return JSON.parse(str)||[]; } catch(e) { return []; } };
-  document.getElementById('job-id-display').textContent = newJobNo;
   document.getElementById('f-customer').value     = original['Customer'] || '';
   document.getElementById('f-contact').value      = original['Contact'] || '';
   document.getElementById('f-phone').value        = original['Phone'] || '';
