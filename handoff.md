@@ -601,7 +601,7 @@ Templates pre-populate:
 
 ---
 
-## CURRENT SYSTEM STATE (as of May 14, 2026)
+## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 2)
 
 ### Live System — `https://www.q2m.io/jobs/`
 - **Service worker:** `CACHE_NAME = 'q2-machines-v3'`, network-first for HTML
@@ -611,7 +611,7 @@ Templates pre-populate:
 ### Login Flow
 `doLogin()` → `initApp()` → `openDashboard()`
 
-`doLogin()` wraps `initApp()` in a try/catch — any JS error thrown inside `initApp()` is silently swallowed. The error message is set on the login form element which is already hidden, giving a blank screen with no feedback. This is a known fragility.
+`initApp()` is now isolated from the auth `try/catch` in both `doLogin()` and the `DOMContentLoaded` session-restore path. Auth errors (bad credentials, profile load failure) still display on the login form. Errors thrown inside `initApp()` after a successful login surface via `showToast()` and `console.error()` — no more blank screen with no feedback.
 
 **Note:** `newJobCard(true)` was removed from `initApp()`. It was burning a job number on every login before the dashboard opened. Job numbers now only increment when the user explicitly clicks New Job.
 
@@ -657,10 +657,21 @@ Approval badge count is driven by `checkPendingApprovals()` — queries config t
 
 **User Accounts tab** (admin only): inline create-user form (calls `sb.auth.signUp` + upserts `profiles`) and user list with role selector. Uses `createNewUserInline()` — separate from the legacy `createNewUser()` which is still wired to the standalone `usermgr-overlay`.
 
-### Known Bugs Fixed (this session)
+**ID namespacing:** The inline panel's form fields use `inu-*` IDs (`inu-email`, `inu-name`, `inu-pw`, `inu-role`, `inu-msg`) to avoid collision with the identically-named inputs in the legacy `usermgr-overlay` which remains in the static DOM. Do not reuse `new-user-*` IDs in the inline panel.
+
+**Session handling:** `createNewUserInline()` saves the admin session before calling `sb.auth.signUp`. If Supabase returns a new session (email confirmation disabled), the admin session is restored immediately after. Without this, the admin gets silently logged out mid-operation.
+
+### Known Bugs Fixed
+
+**Session 1**
 - `clearAuditLog` / `addAuditEntry` undefined → ReferenceError silently blocked `openDashboard()` on login
 - `currentJobId` not reset in `newJobCard()` → second job save overwrote first job's record
 - Job number consumed on every login → removed eager `newJobCard(true)` from `initApp()`
+
+**Session 2**
+- `initApp()` errors swallowed by `doLogin()` try/catch → blank screen after login if app failed to load; fixed by isolating `initApp()` into its own try/catch with toast feedback
+- Inline User Accounts form non-functional → all five form field IDs (`new-user-*`, `usermgr-create-msg`) duplicated in the hidden legacy `usermgr-overlay`; `getElementById` always returned the hidden elements, making validation errors invisible and reading empty field values; fixed by namespacing inline panel to `inu-*` IDs
+- `createNewUserInline()` missing admin session save/restore → Supabase `signUp` switched active session to new user, silently logging out the admin; fixed by capturing and restoring the admin session around the `signUp` call
 
 ---
 
@@ -669,13 +680,14 @@ Approval badge count is driven by `checkPendingApprovals()` — queries config t
 1. ✅ Design complete (this document)
 2. ✅ System stabilisation: login flow fixed, dashboard wired, toolbar consolidated
 3. ✅ Config Manager: Employees and User Accounts tabs added
-4. ⏳ Development: Build planning tools (Charter through H&S)
-5. ⏳ Development: Build approval workflow & baseline snapshot
-6. ⏳ Development: Build tracking tools (Gantt through Incidents)
-7. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
-8. ⏳ Templates: Create standard project templates
-8. ⏳ Deployment: Test on live Q2M jobs
-9. ⏳ Phase 2: Client portal (future build)
+4. ✅ Bug fixes: initApp error swallow, inline user form duplicate IDs, session restore
+5. ⏳ Development: Build planning tools (Charter through H&S)
+6. ⏳ Development: Build approval workflow & baseline snapshot
+7. ⏳ Development: Build tracking tools (Gantt through Incidents)
+8. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
+9. ⏳ Templates: Create standard project templates
+10. ⏳ Deployment: Test on live Q2M jobs
+11. ⏳ Phase 2: Client portal (future build)
 
 ---
 
