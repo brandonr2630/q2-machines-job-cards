@@ -104,7 +104,7 @@ deliverable_id, created_at, updated_at
 id, job_id, wbs_task_id, task_name, planned_start_date, 
 planned_finish_date, duration_days, predecessor_task_id, lag_days,
 slack_days, is_milestone, actual_start_date, actual_finish_date, 
-%_complete
+pct_complete
 ```
 
 **job_milestones**
@@ -173,11 +173,16 @@ created_at, updated_at
 
 **job_qa_testing_plan** (child of job_qa_plan)
 ```
-id, job_id, testing_strategy, test_types_to_conduct (JSON array with:
-test_id, test_name, test_phase, procedure, frequency, sample_size,
-equipment_needed, time_per_test_hours, pass_criteria, 
-responsible_person, wbs_task_id),
-total_qa_hours_budgeted
+id, job_id, testing_strategy, total_qa_hours_budgeted
+```
+
+**job_qa_tests** (child of job_qa_testing_plan)
+```
+id, job_id, qa_plan_id, sequence, test_name, test_phase
+(design|fabrication|in-process|pre-delivery|post-delivery),
+procedure, frequency, sample_size, equipment_needed,
+time_per_test_hours, pass_criteria, responsible_person,
+wbs_task_id, created_at
 ```
 
 **job_qa_checkpoints** (child of job_qa_plan)
