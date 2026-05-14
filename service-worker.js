@@ -2,22 +2,19 @@
 // Caches app shell for offline use
 
 const CACHE_NAME = 'q2-machines-v3';
-const SHELL = [
-  '/',
-  '/index.html',
+const STATIC_SHELL = [
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/QQL_2024.jpg',
-  'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap'
+  '/QQL_2024.jpg'
 ];
 
-// Install — cache the app shell
+// Install — cache static assets only (not HTML)
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(SHELL.filter(url => !url.startsWith('https://fonts')));
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_SHELL))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -30,30 +27,49 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch — serve from cache, fall back to network
+// Fetch strategy:
+//   HTML documents  → network-first (always get latest app shell)
+//   API / Supabase  → network-only
+//   Static assets   → cache-first, fallback to network
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+  const isHTML = event.request.headers.get('accept')?.includes('text/html');
 
-  // Always go network-first for Google Apps Script calls
-  if (url.hostname === 'script.google.com') {
+  // Network-only: API calls and external services
+  if (url.hostname !== self.location.hostname) {
+    event.respondWith(fetch(event.request).catch(() =>
+      isHTML
+        ? caches.match('/index.html')
+        : new Response('', { status: 503 })
+    ));
+    return;
+  }
+
+  // Network-first for HTML — ensures users always get the latest version
+  if (isHTML || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/jobs') || url.pathname.endsWith('/jobs/')) {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ error: 'Offline — request queued' }), {
-          headers: { 'Content-Type': 'application/json' }
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
         })
-      )
+        .catch(() => caches.match(event.request).then(cached => cached || caches.match('/index.html')))
     );
     return;
   }
 
-  // Cache-first for app shell assets
+  // Cache-first for static assets (images, manifest, fonts)
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'opaque') return response;
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
         return response;
       }).catch(() => caches.match('/index.html'));
     })
