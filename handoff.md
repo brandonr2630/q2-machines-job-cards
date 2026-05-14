@@ -601,12 +601,13 @@ Templates pre-populate:
 
 ---
 
-## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 3)
+## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 4)
 
 ### Live System — `https://www.q2m.io/jobs/`
 - **Service worker:** `CACHE_NAME = 'q2-machines-v3'`, network-first for HTML
 - **Supabase project:** `pnrfcusipgojhkuvtjio`
-- **Active file:** `index.html` (~3800 lines). `index1.html` is archive — do not edit.
+- **Active file:** `index.html` (~3950 lines). `index1.html` is archive — do not edit.
+- **Email / SMTP:** Custom SMTP configured via Resend (`smtp.resend.com:465`), sending from `noreply@q2m.io`. Supabase built-in email removed. `https://www.q2m.io/jobs/` is whitelisted in Supabase → Authentication → URL Configuration → Additional Redirect URLs.
 
 ### Login Flow
 `doLogin()` → `initApp()` → `openDashboard()`
@@ -673,11 +674,40 @@ Equipment is removed from the Suggest modal (it previously offered a 4-field for
 
 **Employees table** (`employees`): name, date_of_birth, date_of_employment, address, contact_no, email, job_classification, nationality, next_of_kin, next_of_kin_contact, created_at, updated_at, created_by. Age is calculated client-side from DOB — not stored.
 
-**User Accounts tab** (admin only): inline create-user form (calls `sb.auth.signUp` + upserts `profiles`) and user list with role selector. Uses `createNewUserInline()` — separate from the legacy `createNewUser()` which is still wired to the standalone `usermgr-overlay`.
+**User Accounts tab** (admin only): inline create-user form (calls `sb.auth.signUp` + upserts `profiles`) and user list with full management actions. Uses `createNewUserInline()` — separate from the legacy `createNewUser()` which is still wired to the standalone `usermgr-overlay`.
 
-**ID namespacing:** The inline panel's form fields use `inu-*` IDs (`inu-email`, `inu-name`, `inu-pw`, `inu-role`, `inu-msg`) to avoid collision with the identically-named inputs in the legacy `usermgr-overlay` which remains in the static DOM. Do not reuse `new-user-*` IDs in the inline panel.
+**User Accounts — Existing Users table columns:** Username · Email · Role (inline dropdown) · Status (Active/Blocked badge) · Joined · Actions
+
+**Actions per user row:**
+- **Edit** — opens `edit-user-modal` (id, name, email, role fields). Populated from `_userMap` (module-level map built on each `renderUsersPanel()` call — avoids embedding data in onclick attributes). Modal also contains a "Send Reset Email" button.
+- **Block / Unblock** — toggles `profiles.blocked`. Blocked users are rejected at login with "Account suspended" after Supabase sign-out. The current logged-in admin cannot block themselves (isSelf guard).
+- **Send Reset Email** — calls `sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('#')[0] })`. Sends a Supabase magic link via Resend SMTP. When the user clicks the link they land back on the app and the login box transforms into a Set New Password form (see Password Recovery Flow below).
+
+**`profiles` table columns (session 4 migration `profiles_add_email_and_blocked`):** `id`, `username`, `role`, `created_at`, `email` (text), `blocked` (boolean default false). `createNewUserInline()` saves `email` to `profiles` so it is available for reset emails and display.
+
+**ID namespacing:** The inline panel's form fields use `inu-*` IDs (`inu-email`, `inu-name`, `inu-pw`, `inu-role`, `inu-msg`) to avoid collision with the identically-named inputs in the legacy `usermgr-overlay` which remains in the static DOM. Do not reuse `new-user-*` IDs in the inline panel. Edit modal uses `eum-*` IDs.
 
 **Session handling:** `createNewUserInline()` saves the admin session before calling `sb.auth.signUp`. If Supabase returns a new session (email confirmation disabled), the admin session is restored immediately after. Without this, the admin gets silently logged out mid-operation.
+
+### Password Recovery Flow
+When an admin sends a password reset email, the user receives a link pointing back to `q2m.io/jobs/` with a `#access_token=...&type=recovery` hash.
+
+On page load, `DOMContentLoaded` checks `window.location.hash` for `type=recovery` **before** the normal session-restore path. If detected, `showPasswordRecoveryUI()` is called immediately. `onAuthStateChange` also listens for the `PASSWORD_RECOVERY` event as a fallback.
+
+`showPasswordRecoveryUI()` transforms the login box in place:
+- Hides the email/password fields and Sign In button
+- Shows `#login-recovery-section` (two password fields + Set New Password button)
+- Updates the title/eyebrow text
+
+`doPasswordReset()` calls `sb.auth.updateUser({ password })`, signs out, restores the normal login UI, clears the URL hash via `history.replaceState`, and shows a success message prompting the user to sign in with their new password.
+
+### Draft Restore
+`restoreDraft()` in `initApp()` now shows a `showConfirm` dialog instead of a persistent toast. The old toast had no dismiss option, causing it to reappear on every login. The old restore path (`homeGoNewJob()`) was also unreachable from the new dashboard.
+
+- **Restore Draft** → `closeDashboard()` + `newJobCard(true)` + `loadJobFromRow(draft.data)` + `clearDraft()`
+- **Cancel** → `clearDraft()` immediately
+
+Either choice removes the draft from `localStorage`. Drafts older than 24 hours are auto-discarded by `restoreDraft()`.
 
 ### Known Bugs Fixed
 
@@ -695,6 +725,15 @@ Equipment is removed from the Suggest modal (it previously offered a 4-field for
 - `duplicateJob()` called `fetchNewJobNo()` then `newJobCard(true)` (which calls it again) → two job numbers consumed per duplicate, causing non-sequential numbering; fixed by removing the explicit pre-fetch from `duplicateJob()`
 - `deleteJob()` called `newJobCard(true)` after deletion → consumed a job number immediately regardless of whether the user intended to create a new job; fixed by redirecting to `openDashboard()` after delete
 
+**Session 4**
+- User Accounts table had no Edit/Block/Reset actions → added full user management (edit modal, block/unblock toggle, send password reset email)
+- Action buttons rendered via `display:flex` on `<td>` directly → broke table row border alignment; fixed by moving flex to an inner `<div>`
+- `onclick` attributes embedded username/email as string arguments → any name with an apostrophe silently broke the JS handler; fixed by storing all user records in `_userMap` and passing only the UUID to handlers
+- `.modal-overlay` had a duplicate CSS rule with `z-index:9000`, overriding the correct `z-index:10000` — all modals were rendering behind the Config Manager (`z-index:9100`); fixed by correcting the duplicate rule
+- `#confirm-modal` rendered behind the edit-user-modal (same z-index, earlier in DOM) → added `#confirm-modal { z-index:11000 }`
+- Password reset link pointed to `localhost:3000` (Supabase default Site URL) → added `redirectTo: window.location.href.split('#')[0]` to `resetPasswordForEmail`, wired `PASSWORD_RECOVERY` event handler, added `showPasswordRecoveryUI()` / `doPasswordReset()` for in-app password setting; configured Resend custom SMTP
+- Draft restore toast had no dismiss option → reappeared on every login; draft restore path (`homeGoNewJob()`) was unreachable from new dashboard; replaced with `showConfirm` dialog offering Restore or Discard, both clearing the draft from `localStorage`
+
 ---
 
 ## NEXT STEPS
@@ -705,13 +744,16 @@ Equipment is removed from the Suggest modal (it previously offered a 4-field for
 4. ✅ Bug fixes: initApp error swallow, inline user form duplicate IDs, session restore
 5. ✅ Bug fixes: job number gaps on duplicate and delete
 6. ✅ Config Manager: Equipment / Machine tab expanded (32 new fields, custom form with conditional sections)
-7. ⏳ Development: Build planning tools (Charter through H&S)
-8. ⏳ Development: Build approval workflow & baseline snapshot
-9. ⏳ Development: Build tracking tools (Gantt through Incidents)
-10. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
-11. ⏳ Templates: Create standard project templates
-12. ⏳ Deployment: Test on live Q2M jobs
-13. ⏳ Phase 2: Client portal (future build)
+7. ✅ User Accounts: Edit, Block/Unblock, Password Reset (send email + in-app Set New Password flow)
+8. ✅ Email: Custom SMTP via Resend, sending from noreply@q2m.io
+9. ✅ Bug fixes: modal z-index stack, onclick data embedding, draft toast/restore
+10. ⏳ Development: Build planning tools (Charter through H&S)
+11. ⏳ Development: Build approval workflow & baseline snapshot
+12. ⏳ Development: Build tracking tools (Gantt through Incidents)
+13. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
+14. ⏳ Templates: Create standard project templates
+15. ⏳ Deployment: Test on live Q2M jobs
+16. ⏳ Phase 2: Client portal (future build)
 
 ---
 
