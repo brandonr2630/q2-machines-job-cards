@@ -1020,8 +1020,6 @@ body.readonly .qc-check { pointer-events:none; }
 <div class="toolbar">
   <div class="toolbar-section">
     <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="openDashboard()">🏠 Home</button>
-    <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="safeNewJobCard()">+ New Job</button>
-    <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="openDashboard()">📋 All Jobs</button>
     <button class="btn btn-outline btn-blue" style="padding:5px 12px;font-size:11px;" onclick="duplicateJob()">⧉ Duplicate</button>
   </div>
   <div class="toolbar-divider"></div>
@@ -1036,10 +1034,6 @@ body.readonly .qc-check { pointer-events:none; }
   <div class="toolbar-divider"></div>
   <button class="btn btn-save" onclick="saveJob()">💾 Save</button>
   <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="window.print()">🖨 Print</button>
-  <div class="toolbar-divider"></div>
-  <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="openSuggestModal()">＋ Suggest Item</button>
-  <button class="btn btn-outline admin-only" id="approvals-btn" style="padding:5px 12px;font-size:11px;display:none;" onclick="openApprovalsPanel()">🔔 Approvals<span class="approval-badge" id="approval-badge"></span></button>
-  <button class="btn btn-outline admin-only" id="cfgmgr-btn" style="padding:5px 12px;font-size:11px;display:none;" onclick="openConfigManager()">⚙ Config</button>
 </div>
 
 <!-- STATUS BAR -->
@@ -1401,6 +1395,11 @@ body.readonly .qc-check { pointer-events:none; }
       </div>
     </div>
     <div class="dash-header-right">
+      <div id="approvals-btn" style="display:none;position:relative;">
+        <button class="dash-btn-icon" title="Pending Approvals" onclick="openApprovalsPanel()">🔔</button>
+        <span class="approval-badge" id="approval-badge" style="position:absolute;top:-5px;right:-5px;margin:0;"></span>
+      </div>
+      <button class="dash-btn-icon" id="cfgmgr-btn" style="display:none;" title="Config Settings" onclick="openConfigManager()">⚙</button>
       <button class="dash-btn-new" onclick="closeDashboard();safeNewJobCard()">＋ New Job</button>
       <button class="dash-btn-icon" title="Refresh" onclick="loadDashboard()">↺</button>
       <button class="dash-btn-icon" title="Close" onclick="closeDashboard()">✕</button>
