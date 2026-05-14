@@ -348,6 +348,7 @@ body.dark .register-table td input:focus { background:#2A2500; }
 /* ── MODAL ── */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:10000; display:none; align-items:center; justify-content:center; }
 .modal-overlay.show { display:flex; }
+#confirm-modal { z-index:11000; }
 .modal { background:var(--surface); border-radius:var(--radius-lg); padding:24px; max-width:420px; width:90%; box-shadow:var(--shadow-md); }
 .modal h3 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--ink); margin-bottom:12px; }
 .modal p { font-size:13px; color:var(--ink-light); margin-bottom:12px; line-height:1.6; }
@@ -874,6 +875,25 @@ body.readonly .qc-check { pointer-events:none; }
       </button>
 
       <div class="login-error" id="login-error"></div>
+
+      <!-- Recovery mode: shown when user arrives via password reset link -->
+      <div id="login-recovery-section" style="display:none;">
+        <div class="login-field">
+          <label>New Password</label>
+          <input type="password" id="reset-pw-new" placeholder="At least 6 characters" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter')document.getElementById('reset-pw-confirm').focus()">
+        </div>
+        <div class="login-field">
+          <label>Confirm New Password</label>
+          <input type="password" id="reset-pw-confirm" placeholder="Confirm password" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter')doPasswordReset()">
+        </div>
+        <button class="login-btn" id="reset-pw-btn" onclick="doPasswordReset()">
+          <div class="btn-spinner"></div>
+          <span class="btn-label">Set New Password</span>
+        </button>
+        <div class="login-error" id="reset-pw-error"></div>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -1682,6 +1702,51 @@ function togglePw() {
   inp.focus();
 }
 
+function showPasswordRecoveryUI() {
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.querySelector('.login-title').textContent    = 'Set New Password';
+  document.querySelector('.login-eyebrow').textContent  = 'Password Reset';
+  document.getElementById('login-username').closest('.login-field').style.display = 'none';
+  document.getElementById('login-password').closest('.login-field').style.display = 'none';
+  document.getElementById('login-btn').style.display    = 'none';
+  document.getElementById('login-recovery-section').style.display = 'block';
+  setTimeout(() => document.getElementById('reset-pw-new').focus(), 100);
+}
+
+async function doPasswordReset() {
+  const pw      = document.getElementById('reset-pw-new').value;
+  const confirm = document.getElementById('reset-pw-confirm').value;
+  const errEl   = document.getElementById('reset-pw-error');
+  const btn     = document.getElementById('reset-pw-btn');
+  errEl.textContent = '';
+  if (!pw || pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pw !== confirm)        { errEl.textContent = 'Passwords do not match.'; return; }
+  btn.classList.add('loading');
+  try {
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if (error) throw error;
+    await sb.auth.signOut();
+    // Restore normal login UI
+    document.querySelector('.login-title').textContent   = 'Sign In';
+    document.querySelector('.login-eyebrow').textContent = 'Secure Access';
+    document.getElementById('login-username').closest('.login-field').style.display = '';
+    document.getElementById('login-password').closest('.login-field').style.display = '';
+    document.getElementById('login-btn').style.display   = '';
+    document.getElementById('login-recovery-section').style.display = 'none';
+    document.getElementById('reset-pw-new').value        = '';
+    document.getElementById('reset-pw-confirm').value    = '';
+    const loginErr = document.getElementById('login-error');
+    loginErr.style.color    = '#22c55e';
+    loginErr.textContent    = '✓ Password updated. Please sign in with your new password.';
+    history.replaceState(null, '', window.location.pathname);
+    setTimeout(() => document.getElementById('login-username').focus(), 100);
+  } catch(e) {
+    errEl.textContent = e.message || 'Failed to update password. Try requesting a new reset link.';
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
 async function doLogin() {
   const email    = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
@@ -1742,6 +1807,12 @@ async function doLogout() {
 // ── INIT
 window.addEventListener('DOMContentLoaded', async () => {
   applyDark();
+  // Detect password recovery link before doing anything else
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  if (hashParams.get('type') === 'recovery') {
+    showPasswordRecoveryUI();
+    return;
+  }
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     const { data: profile } = await sb
@@ -1764,6 +1835,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 sb.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT' && currentRole) doLogout();
+  if (event === 'PASSWORD_RECOVERY') showPasswordRecoveryUI();
 });
 
 async function initApp() {
@@ -4075,7 +4147,9 @@ async function sendPasswordReset(email) {
     await showConfirm('Send Password Reset', `Send a password reset email to ${email}?`, 'Send');
   } catch(e) { return; }
   try {
-    const { error } = await sb.auth.resetPasswordForEmail(email);
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href.split('#')[0]
+    });
     if (error) throw error;
     const msgEl = document.getElementById('eum-msg');
     if (msgEl) { msgEl.style.color = 'var(--green, #065f46)'; msgEl.textContent = `✓ Reset email sent to ${email}.`; }
