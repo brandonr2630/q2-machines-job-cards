@@ -281,13 +281,13 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .approval-notes { width:160px; border:1px solid var(--border); border-radius:var(--radius); padding:5px 8px; font-size:11px; background:var(--body-bg); color:var(--ink); }
 .approvals-empty { color:var(--ink-light); font-size:14px; text-align:center; padding:48px 0; }
 /* ── CONFIG MANAGER ── */
-.cfgmgr-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9100; display:none; flex-direction:row; }
+.cfgmgr-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9100; display:none; flex-direction:column; }
 .cfgmgr-overlay.show { display:flex; }
+.cfgmgr-main { flex:1; display:flex; flex-direction:row; }
 .cfgmgr-sidebar { width:160px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
 .cfgmgr-sidebar-header { padding:12px; display:none; justify-content:flex-end; }
 .cfgmgr-sidebar-close { background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink); }
 .cfgmgr-sidebar-toggle { display:none; background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink); padding:0; }
-.cfgmgr-content { flex:1; display:flex; flex-direction:column; }
 .cfgmgr-header { padding:14px 28px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .cfgmgr-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:2px; text-transform:uppercase; flex:1; }
 .cfgmgr-tabs { display:flex; flex-direction:column; gap:0; padding:12px 0; }
@@ -309,7 +309,7 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .cfgmgr-empty { color:var(--ink-light); font-size:13px; padding:24px 0; text-align:center; }
 .toast.loading { border-left-color:var(--gold); }
 .toast.warn    { border-left-color:var(--amber); }
-@media (max-width:768px) { .cfgmgr-overlay { flex-direction:column; } .cfgmgr-sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); max-height:0; overflow:hidden; transition:max-height 0.3s ease; } .cfgmgr-sidebar.open { max-height:300px; } .cfgmgr-sidebar-header { display:flex; } .cfgmgr-sidebar-toggle { display:block; } .cfgmgr-tabs { flex-direction:row; gap:4px; padding:0 12px 12px; flex-wrap:wrap; } .cfgmgr-tab { border-left:none; border:1px solid var(--border); border-radius:var(--radius); padding:5px 14px; background:var(--body-bg); } .cfgmgr-tab.active { background:var(--gold); color:var(--ink); border-color:var(--gold); } .cfgmgr-header { flex-wrap:wrap; } }
+@media (max-width:768px) { .cfgmgr-main { flex-direction:column; } .cfgmgr-sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); max-height:0; overflow:hidden; transition:max-height 0.3s ease; } .cfgmgr-sidebar.open { max-height:300px; } .cfgmgr-sidebar-header { display:flex; } .cfgmgr-sidebar-toggle { display:block; } .cfgmgr-tabs { flex-direction:row; gap:4px; padding:0 12px 12px; flex-wrap:wrap; } .cfgmgr-tab { border-left:none; border:1px solid var(--border); border-radius:var(--radius); padding:5px 14px; background:var(--body-bg); } .cfgmgr-tab.active { background:var(--gold); color:var(--ink); border-color:var(--gold); } .cfgmgr-header { flex-wrap:wrap; } }
 .emp-section-title { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin:0 0 10px; }
 .emp-form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .emp-form-grid .span-2 { grid-column:span 2; }
@@ -4243,21 +4243,24 @@ async function createNewUser() {
 
 <!-- ── CONFIG MANAGER ── -->
 <div class="cfgmgr-overlay" id="cfgmgr-overlay">
-  <!-- Left Sidebar (Tabs) -->
-  <div class="cfgmgr-sidebar" id="cfgmgr-sidebar">
-    <div class="cfgmgr-sidebar-header">
-      <button class="cfgmgr-sidebar-close" onclick="closeCfgSidebar()">✕</button>
-    </div>
-    <div class="cfgmgr-tabs" id="cfgmgr-tabs"></div>
+  <!-- Header (Full Width) -->
+  <div class="cfgmgr-header">
+    <button class="cfgmgr-sidebar-toggle" onclick="toggleCfgSidebar()">☰</button>
+    <h2>Setup</h2>
+    <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="closeConfigManager()">✕ Close</button>
   </div>
 
-  <!-- Main Content Area -->
-  <div class="cfgmgr-content">
-    <div class="cfgmgr-header">
-      <button class="cfgmgr-sidebar-toggle" onclick="toggleCfgSidebar()">☰</button>
-      <h2>Config Manager</h2>
-      <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="closeConfigManager()">✕ Close</button>
+  <!-- Main Area (Sidebar + Content) -->
+  <div class="cfgmgr-main">
+    <!-- Left Sidebar (Tabs) -->
+    <div class="cfgmgr-sidebar" id="cfgmgr-sidebar">
+      <div class="cfgmgr-sidebar-header">
+        <button class="cfgmgr-sidebar-close" onclick="closeCfgSidebar()">✕</button>
+      </div>
+      <div class="cfgmgr-tabs" id="cfgmgr-tabs"></div>
     </div>
+
+    <!-- Body -->
     <div class="cfgmgr-body" id="cfgmgr-body"></div>
   </div>
 </div>
