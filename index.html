@@ -281,13 +281,20 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .approval-notes { width:160px; border:1px solid var(--border); border-radius:var(--radius); padding:5px 8px; font-size:11px; background:var(--body-bg); color:var(--ink); }
 .approvals-empty { color:var(--ink-light); font-size:14px; text-align:center; padding:48px 0; }
 /* ── CONFIG MANAGER ── */
-.cfgmgr-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9100; display:none; flex-direction:column; }
+.cfgmgr-overlay { position:fixed; inset:0; background:var(--body-bg); z-index:9100; display:none; flex-direction:row; }
 .cfgmgr-overlay.show { display:flex; }
+.cfgmgr-sidebar { width:160px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow-y:auto; }
+.cfgmgr-sidebar-header { padding:12px; display:none; justify-content:flex-end; }
+.cfgmgr-sidebar-close { background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink); }
+.cfgmgr-sidebar-toggle { display:none; background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink); padding:0; }
+.cfgmgr-content { flex:1; display:flex; flex-direction:column; }
 .cfgmgr-header { padding:14px 28px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .cfgmgr-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:2px; text-transform:uppercase; flex:1; }
-.cfgmgr-tabs { display:flex; gap:4px; flex-wrap:wrap; }
-.cfgmgr-tab { padding:5px 14px; border:1px solid var(--border); border-radius:var(--radius); font-size:12px; font-weight:600; cursor:pointer; background:var(--body-bg); color:var(--ink-light); }
-.cfgmgr-tab.active { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+.cfgmgr-tabs { display:flex; flex-direction:column; gap:0; padding:12px 0; }
+.cfgmgr-tab { padding:10px 14px; border:none; border-left:3px solid transparent; border-radius:0; font-size:12px; font-weight:600; cursor:pointer; background:transparent; color:var(--ink-light); text-align:left; transition:all 0.2s ease; }
+.cfgmgr-tab:hover { background:rgba(0,0,0,0.05); color:var(--ink); }
+.cfgmgr-tab.active { background:transparent; color:var(--ink); border-left-color:var(--gold); font-weight:700; }
+.cfgmgr-tab.admin-tab { border-bottom:1px dashed var(--border); }
 .cfgmgr-body { flex:1; overflow-y:auto; padding:24px 28px; }
 .cfgmgr-table { width:100%; border-collapse:collapse; font-size:13px; }
 .cfgmgr-table th { text-align:left; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-light); padding:6px 10px; border-bottom:2px solid var(--border); }
@@ -302,7 +309,7 @@ body.dark .register-table td input:focus { background:#2A2500; }
 .cfgmgr-empty { color:var(--ink-light); font-size:13px; padding:24px 0; text-align:center; }
 .toast.loading { border-left-color:var(--gold); }
 .toast.warn    { border-left-color:var(--amber); }
-.cfgmgr-tab.admin-tab { border-style:dashed; }
+@media (max-width:768px) { .cfgmgr-overlay { flex-direction:column; } .cfgmgr-sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); max-height:0; overflow:hidden; transition:max-height 0.3s ease; } .cfgmgr-sidebar.open { max-height:300px; } .cfgmgr-sidebar-header { display:flex; } .cfgmgr-sidebar-toggle { display:block; } .cfgmgr-tabs { flex-direction:row; gap:4px; padding:0 12px 12px; flex-wrap:wrap; } .cfgmgr-tab { border-left:none; border:1px solid var(--border); border-radius:var(--radius); padding:5px 14px; background:var(--body-bg); } .cfgmgr-tab.active { background:var(--gold); color:var(--ink); border-color:var(--gold); } .cfgmgr-header { flex-wrap:wrap; } }
 .emp-section-title { font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-light); margin:0 0 10px; }
 .emp-form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .emp-form-grid .span-2 { grid-column:span 2; }
@@ -3188,6 +3195,8 @@ function openConfigManager() {
   renderConfigTable(cfgActiveType);
 }
 function closeConfigManager() { document.getElementById('cfgmgr-overlay').classList.remove('show'); }
+function toggleCfgSidebar() { document.getElementById('cfgmgr-sidebar').classList.toggle('open'); }
+function closeCfgSidebar() { document.getElementById('cfgmgr-sidebar').classList.remove('open'); }
 function switchCfgTab(type) {
   cfgActiveType = type;
   document.querySelectorAll('.cfgmgr-tab').forEach(t => t.classList.toggle('active', t.onclick?.toString().includes(`'${type}'`)));
@@ -4234,12 +4243,23 @@ async function createNewUser() {
 
 <!-- ── CONFIG MANAGER ── -->
 <div class="cfgmgr-overlay" id="cfgmgr-overlay">
-  <div class="cfgmgr-header">
-    <h2>Config Manager</h2>
+  <!-- Left Sidebar (Tabs) -->
+  <div class="cfgmgr-sidebar" id="cfgmgr-sidebar">
+    <div class="cfgmgr-sidebar-header">
+      <button class="cfgmgr-sidebar-close" onclick="closeCfgSidebar()">✕</button>
+    </div>
     <div class="cfgmgr-tabs" id="cfgmgr-tabs"></div>
-    <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="closeConfigManager()">✕ Close</button>
   </div>
-  <div class="cfgmgr-body" id="cfgmgr-body"></div>
+
+  <!-- Main Content Area -->
+  <div class="cfgmgr-content">
+    <div class="cfgmgr-header">
+      <button class="cfgmgr-sidebar-toggle" onclick="toggleCfgSidebar()">☰</button>
+      <h2>Config Manager</h2>
+      <button class="btn btn-outline" style="padding:5px 14px;font-size:12px;" onclick="closeConfigManager()">✕ Close</button>
+    </div>
+    <div class="cfgmgr-body" id="cfgmgr-body"></div>
+  </div>
 </div>
 
 <!-- ── APPROVALS PANEL ── -->
