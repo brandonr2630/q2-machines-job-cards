@@ -1,7 +1,7 @@
 # Q2 Machines Job Card System — Planning & Tracking Tools
 ## Project Handoff Document
 
-**Date:** May 14, 2026  
+**Date:** May 2026  
 **Status:** System Stabilisation Complete — Ready for Planning Tools Development  
 **Scope:** Planning tools, tracking tools, and interoperability (Client portal deferred)
 
@@ -601,12 +601,12 @@ Templates pre-populate:
 
 ---
 
-## CURRENT SYSTEM STATE (as of May 14, 2026 — updated post-session 4)
+## CURRENT SYSTEM STATE (as of May 2026 — updated post-session 5)
 
 ### Live System — `https://www.q2m.io/jobs/`
 - **Service worker:** `CACHE_NAME = 'q2-machines-v3'`, network-first for HTML
 - **Supabase project:** `pnrfcusipgojhkuvtjio`
-- **Active file:** `index.html` (~3950 lines). `index1.html` is archive — do not edit.
+- **Active file:** `index.html` (~4000 lines). `index1.html` is archive — do not edit.
 - **Email / SMTP:** Custom SMTP configured via Resend (`smtp.resend.com:465`), sending from `noreply@q2m.io`. Supabase built-in email removed. `https://www.q2m.io/jobs/` is whitelisted in Supabase → Authentication → URL Configuration → Additional Redirect URLs.
 
 ### Login Flow
@@ -644,8 +644,8 @@ Shown/hidden by `setRole()` on login:
 
 Approval badge count is driven by `checkPendingApprovals()` — queries config tables for `status='pending'`. Custom tabs (`employees`, `users`, `equipment`) are flagged `skipApprovals:true` and excluded from this query.
 
-### Config Manager
-8 tabs, accessible from the dashboard header (admin) or ⚙ Config button:
+### Config Manager (Setup Panel)
+8 tabs, accessible from the dashboard header (admin) or ⚙ Config button. **Session 5 redesign (May 2026):** tabs moved to a left sidebar (vertical layout, desktop) or collapsible panel (mobile). Header spans full width with "Setup" title. Desktop sidebar is 160px wide; active tab highlighted with gold left border. Mobile uses hamburger toggle (☰) to collapse/expand tabs.
 
 | Tab | Table | Renderer | Notes |
 |-----|-------|----------|-------|
@@ -734,6 +734,11 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 - Password reset link pointed to `localhost:3000` (Supabase default Site URL) → added `redirectTo: window.location.href.split('#')[0]` to `resetPasswordForEmail`, wired `PASSWORD_RECOVERY` event handler, added `showPasswordRecoveryUI()` / `doPasswordReset()` for in-app password setting; configured Resend custom SMTP
 - Draft restore toast had no dismiss option → reappeared on every login; draft restore path (`homeGoNewJob()`) was unreachable from new dashboard; replaced with `showConfirm` dialog offering Restore or Discard, both clearing the draft from `localStorage`
 
+**Session 5**
+- Config Manager sidebar redesign: tabs moved from horizontal header layout to dedicated left sidebar (desktop) / collapsible panel (mobile). Header now spans full width. Title changed from "Config Manager" to "Setup". Desktop sidebar 160px wide with gold left-border active state; mobile toggle via hamburger icon (☰). HTML restructured with new `cfgmgr-main` wrapper and `toggleCfgSidebar()`/`closeCfgSidebar()` JS functions. CSS updated for row/column flex layouts and responsive breakpoint at 768px.
+- HMI brainstorm completed for planning tools phase: decided on non-linear canvas (card-based UI showing all 8 planning tools) instead of sequential wizard; lean terminology (e.g., "What Could Go Wrong" vs. "Risk Register"); mobile-first execution views; approver workflow with summary-based review (not detail drill-down); smart cascading with manual override (budget auto-populates from material rates, other downstream tools flagged for review); contextual audit trails (not separate report view). Key architectural decision: baseline snapshot frozen at approval, version increments on re-approval (v1, v2, etc.) for comparison after changes.
+- Document handling discussion: Supabase Storage (simplest) vs. Zoho Workdrive (Option 3: Edge Function proxy for security). No Zoho MCP in registry; will use Supabase Storage for file uploads or build Edge Function proxy if organizational requirement for Workdrive integration emerges.
+
 ---
 
 ## NEXT STEPS
@@ -747,13 +752,32 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 7. ✅ User Accounts: Edit, Block/Unblock, Password Reset (send email + in-app Set New Password flow)
 8. ✅ Email: Custom SMTP via Resend, sending from noreply@q2m.io
 9. ✅ Bug fixes: modal z-index stack, onclick data embedding, draft toast/restore
-10. ⏳ Development: Build planning tools (Charter through H&S)
-11. ⏳ Development: Build approval workflow & baseline snapshot
-12. ⏳ Development: Build tracking tools (Gantt through Incidents)
-13. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
-14. ⏳ Templates: Create standard project templates
-15. ⏳ Deployment: Test on live Q2M jobs
-16. ⏳ Phase 2: Client portal (future build)
+10. ✅ Config Manager UI redesign: sidebar layout, "Setup" naming, mobile-responsive toggle
+11. ✅ HMI brainstorm: planning tools phase strategy (non-linear canvas, lean terminology, baseline versioning)
+12. ⏳ Development: Build planning tools UI (Charter through H&S)
+   - Start with non-linear canvas showing all 8 planning tools as cards
+   - Implement auto-cascade for Budget (material/labour rates auto-populate)
+   - Implement audit trail for all edits
+   - Use lean terminology throughout
+13. ⏳ Development: Build approval workflow & baseline snapshot
+   - Approver summary view (one-screen review)
+   - Baseline snapshot creation and version history
+   - Rejection feedback flow (status back to DRAFT, comment visible)
+14. ⏳ Development: Build mobile-first execution views
+   - Daily Standup (phone-friendly form)
+   - Labour Log (swipe-to-log by task)
+   - Safety Brief (pre-work checklist with signatures)
+   - QC Checklist (mobile checkbox list with photo capture)
+   - Material/Equipment Log (quick-entry by task/item)
+15. ⏳ Development: Build execution dashboard (tracking tools)
+   - Project Health top section (on track / behind / over budget)
+   - 3-column view: Schedule Variance, Budget Variance, Risk & Quality
+   - WBS task linking across all views
+16. ⏳ Document handling: Supabase Storage file upload (if needed) or Edge Function proxy for Zoho Workdrive
+17. ⏳ Testing: Full workflow (plan → approval → execution → tracking)
+18. ⏳ Templates: Create standard project templates (Machining, Assembly, Fabrication)
+19. ⏳ Deployment: Test on live Q2M jobs
+20. ⏳ Phase 2: Client portal (future build)
 
 ---
 
