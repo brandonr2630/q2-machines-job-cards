@@ -1,9 +1,32 @@
 # Q2 Machines Job Card System — Planning & Tracking Tools
 ## Project Handoff Document
 
-**Date:** May 2026  
+**Date:** May 2026 (infrastructure updated 2026-05-16)
 **Status:** System Stabilisation Complete — Ready for Planning Tools Development  
 **Scope:** Planning tools, tracking tools, and interoperability (Client portal deferred)
+
+---
+
+## INFRASTRUCTURE LOG
+
+### Session 7 — 2026-05-16 (GitHub Infrastructure)
+
+| Change | Commit |
+|--------|--------|
+| Reusable deploy workflow — inline script → call to `brandonr2630/projects` | `ac534dd` |
+| Auto-merge enabled | — |
+| GitHub Projects board linked | [projects/1](https://github.com/users/brandonr2630/projects/1) |
+
+### Session 6 — 2026-05-16 (Repo Overhaul)
+
+| Change | Commit |
+|--------|--------|
+| `.gitignore` created | `c18e8f5` |
+| Deploy workflow overhauled — binary upload, secrets, `workflow_dispatch` | `c18e8f5` |
+| `.cpanel.yml` removed | `6e789fe` |
+| `Q2_JobCard_ProjectContext.docx` removed from git; `*.docx` added to `.gitignore` | `a9d7910` |
+| Branch protection ruleset on `master` — requires PR | — |
+| Folder renamed `q2-machines-job-cards/` (was already correct) | — |
 
 ---
 
