@@ -11,3 +11,9 @@ Desktop.ini
 
 # Claude Code
 .claude/
+
+# Office documents
+*.docx
+*.doc
+*.xlsx
+*.pptx
