@@ -734,6 +734,12 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 - Password reset link pointed to `localhost:3000` (Supabase default Site URL) → added `redirectTo: window.location.href.split('#')[0]` to `resetPasswordForEmail`, wired `PASSWORD_RECOVERY` event handler, added `showPasswordRecoveryUI()` / `doPasswordReset()` for in-app password setting; configured Resend custom SMTP
 - Draft restore toast had no dismiss option → reappeared on every login; draft restore path (`homeGoNewJob()`) was unreachable from new dashboard; replaced with `showConfirm` dialog offering Restore or Discard, both clearing the draft from `localStorage`
 
+**Session 6 — Infrastructure & Audit (2026-05-16)**
+- Deploy workflow overhauled (`c18e8f5`): `HOST` and `CPANEL_USER` moved to GitHub Secrets (`CPANEL_HOST`, `CPANEL_USER`); binary file upload added (images/icons now upload correctly via `Fileman/upload_files` multipart — previously corrupted silently); subdirectory creation step added; `workflow_dispatch` trigger added for manual full redeploy from GitHub UI/mobile; BEFORE null check fixed (empty string + all-zeros); excluded `ARCHIVES/`, `Code.gs`, `Q2_JobCard_ProjectContext.docx`, `README.md`, `handoff.md` from deploy.
+- `.gitignore` created: OS files (`.DS_Store`, `Thumbs.db`, `Desktop.ini`), editor dirs (`.vscode/`, `.idea/`), Claude Code worktrees (`.claude/`).
+- Cross-repo audit conducted across all 5 Terran Resources repos — findings listed in NEXT STEPS below.
+- Phone management strategy: all repos being prepared for GitHub Mobile — `workflow_dispatch` triggers on all workflows, branch protection + PR flow, `github.dev` for in-browser editing.
+
 **Session 5**
 - Config Manager sidebar redesign: tabs moved from horizontal header layout to dedicated left sidebar (desktop) / collapsible panel (mobile). Header now spans full width. Title changed from "Config Manager" to "Setup". Desktop sidebar 160px wide with gold left-border active state; mobile toggle via hamburger icon (☰). HTML restructured with new `cfgmgr-main` wrapper and `toggleCfgSidebar()`/`closeCfgSidebar()` JS functions. CSS updated for row/column flex layouts and responsive breakpoint at 768px.
 - HMI brainstorm completed for planning tools phase: decided on non-linear canvas (card-based UI showing all 8 planning tools) instead of sequential wizard; lean terminology (e.g., "What Could Go Wrong" vs. "Risk Register"); mobile-first execution views; approver workflow with summary-based review (not detail drill-down); smart cascading with manual override (budget auto-populates from material rates, other downstream tools flagged for review); contextual audit trails (not separate report view). Key architectural decision: baseline snapshot frozen at approval, version increments on re-approval (v1, v2, etc.) for comparison after changes.
@@ -778,6 +784,16 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 18. ⏳ Templates: Create standard project templates (Machining, Assembly, Fabrication)
 19. ⏳ Deployment: Test on live Q2M jobs
 20. ⏳ Phase 2: Client portal (future build)
+
+### Infrastructure (Audit Action Items)
+
+21. ⏳ Fix COC Website (`coc-website`) deploy workflow — text-only upload corrupts `apple-touch-icon.png`, `og_banner.jpg`, `icon-192.png`, `icon-512.png`; update to hybrid binary/text pattern from this repo
+22. ⏳ Fix Terran Group ERP (`meridian-erp`) deploy workflow — same text-only issue; also hardcoded `HOST`/`CPANEL_USER` need moving to secrets
+23. ⏳ Remove stale `.cpanel.yml` files from this repo, `coc-website`, and `meridian-erp` — dead code, superseded by GitHub Actions
+24. ⏳ Enable branch protection on `master` for all 5 repos (GitHub → Settings → Branches → Add rule → Require PR before merging)
+25. ⏳ Wire deploy workflow for `terran-resources-website` when site is ready to launch
+26. ⏳ Move `Q2_JobCard_ProjectContext.docx` out of git (to Google Drive/Notion) — Word docs do not belong in version control
+27. ⏳ Consider gitignoring `ARCHIVES/` — currently tracked but serves no deploy purpose
 
 ---
 
