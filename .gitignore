@@ -12,6 +12,9 @@ Desktop.ini
 # Claude Code
 .claude/
 
+# Archives (old versions; no deploy value)
+ARCHIVES/
+
 # Office documents
 *.docx
 *.doc
