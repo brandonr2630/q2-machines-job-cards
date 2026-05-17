@@ -9,6 +9,19 @@
 
 ## INFRASTRUCTURE LOG
 
+### Session 8 — 2026-05-16 (GitHub Infrastructure — Round 2)
+
+| Change | PR |
+|--------|----|
+| Delete branch on merge enabled on all 5 repos | — (GitHub API) |
+| Concurrency control added to reusable deploy workflow | [projects#1](https://github.com/brandonr2630/projects/pull/1) |
+| `CLAUDE.md` excluded from server deploys (alongside `handoff.md`) | [projects#2](https://github.com/brandonr2630/projects/pull/2) |
+| `CLAUDE.md` added to `meridian-erp` | [meridian-erp#6](https://github.com/brandonr2630/meridian-erp/pull/6) |
+| `CLAUDE.md` added to `q2-machines-job-cards` | [q2-machines-job-cards#4](https://github.com/brandonr2630/q2-machines-job-cards/pull/4) |
+| `CLAUDE.md` added to `q2m-website` | [q2m-website#4](https://github.com/brandonr2630/q2m-website/pull/4) |
+| `CLAUDE.md` added to `coc-website` | [coc-website#7](https://github.com/brandonr2630/coc-website/pull/7) |
+| `terran-resources-website` deploy workflow — deferred; files exist locally | — |
+
 ### Session 7 — 2026-05-16 (GitHub Infrastructure)
 
 | Change | Commit |
@@ -810,12 +823,12 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 
 ### Infrastructure (Audit Action Items)
 
-21. ⏳ Fix COC Website (`coc-website`) deploy workflow — text-only upload corrupts `apple-touch-icon.png`, `og_banner.jpg`, `icon-192.png`, `icon-512.png`; update to hybrid binary/text pattern from this repo
-22. ⏳ Fix Terran Group ERP (`meridian-erp`) deploy workflow — same text-only issue; also hardcoded `HOST`/`CPANEL_USER` need moving to secrets
-23. ⏳ Remove stale `.cpanel.yml` files from this repo, `coc-website`, and `meridian-erp` — dead code, superseded by GitHub Actions
-24. ⏳ Enable branch protection on `master` for all 5 repos (GitHub → Settings → Branches → Add rule → Require PR before merging)
-25. ⏳ Wire deploy workflow for `terran-resources-website` when site is ready to launch
-26. ⏳ Move `Q2_JobCard_ProjectContext.docx` out of git (to Google Drive/Notion) — Word docs do not belong in version control
+21. ✅ Fix COC Website (`coc-website`) deploy workflow — resolved by switching all repos to the reusable workflow (session 7), which has binary file handling built in
+22. ✅ Fix Terran Group ERP (`meridian-erp`) deploy workflow — same; resolved by reusable workflow; secrets moved to `CPANEL_HOST`/`CPANEL_USER`
+23. ⏳ Remove stale `.cpanel.yml` files from `coc-website` and `meridian-erp` — dead code, superseded by GitHub Actions
+24. ✅ Branch protection enabled on `master` for all 5 repos
+25. ⏳ Wire deploy workflow for `terran-resources-website` when site is ready to launch (files exist locally; just needs commit + PR)
+26. ✅ `Q2_JobCard_ProjectContext.docx` removed from git (`a9d7910`)
 27. ⏳ Consider gitignoring `ARCHIVES/` — currently tracked but serves no deploy purpose
 
 ---
