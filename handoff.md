@@ -825,11 +825,11 @@ Either choice removes the draft from `localStorage`. Drafts older than 24 hours 
 
 21. ✅ Fix COC Website (`coc-website`) deploy workflow — resolved by switching all repos to the reusable workflow (session 7), which has binary file handling built in
 22. ✅ Fix Terran Group ERP (`meridian-erp`) deploy workflow — same; resolved by reusable workflow; secrets moved to `CPANEL_HOST`/`CPANEL_USER`
-23. ⏳ Remove stale `.cpanel.yml` files from `coc-website` and `meridian-erp` — dead code, superseded by GitHub Actions
+23. ✅ `.cpanel.yml` — never committed to `coc-website` or `meridian-erp`; already clean
 24. ✅ Branch protection enabled on `master` for all 5 repos
 25. ⏳ Wire deploy workflow for `terran-resources-website` when site is ready to launch (files exist locally; just needs commit + PR)
 26. ✅ `Q2_JobCard_ProjectContext.docx` removed from git (`a9d7910`)
-27. ⏳ Consider gitignoring `ARCHIVES/` — currently tracked but serves no deploy purpose
+27. ✅ `ARCHIVES/` gitignored and 9 tracked files untracked in `q2-machines-job-cards`; `archives/` gitignored in `q2m-website`; `coc-website` already had it
 
 ---
 
