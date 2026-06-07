@@ -7,7 +7,7 @@ Live URL: `q2m.io/jobs` · Repo: `brandonr2630/q2-machines-job-cards`
 Dual-backend PWA. No build system or bundler — files deployed as-is.
 
 - **`index.html`** (~3100 lines) — the entire frontend: Login, Dashboard, Job form, Config Manager, Offline queue, User Management
-- **`service-worker.js`** — caches app shell under `CACHE_NAME = 'q2-machines-v2'`. Increment this version string when deploying changes that must bust the cache.
+- **`service-worker.js`** — caches app shell under `CACHE_NAME = 'q2-machines-v3'`. Increment this version string when deploying changes that must bust the cache.
 - **`Code.gs`** — Google Apps Script (not deployed to GreenGeeks). Deployed separately as a web app ("Execute as: Me, Access: Anyone") backed by a Google Spreadsheet.
 
 ## Backends
