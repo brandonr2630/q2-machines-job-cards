@@ -1,13 +1,21 @@
-# Q2 Machines Job Card System — Planning & Tracking Tools
-## Project Handoff Document
+# Q2 Machines Job Cards — Handoff
 
-**Date:** May 2026 (infrastructure updated 2026-05-16)
-**Status:** System Stabilisation Complete — Ready for Planning Tools Development  
-**Scope:** Planning tools, tracking tools, and interoperability (Client portal deferred)
+*Last updated: 2026-05-16 · Session 8*
 
 ---
 
-## INFRASTRUCTURE LOG
+## Quick Reference
+
+| Item | Value |
+|------|-------|
+| Live URL | `https://www.q2m.io/jobs` |
+| GitHub repo | `brandonr2630/q2-machines-job-cards` |
+| Deploy | Push to `master` via PR → GitHub Actions → GreenGeeks cPanel auto-deploys |
+| Service worker | `service-worker.js` · current: `q2-machines-v3` |
+
+---
+
+## Sessions
 
 ### Session 8 — 2026-05-16 (GitHub Infrastructure — Round 2)
 
