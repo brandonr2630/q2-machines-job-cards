@@ -26,7 +26,9 @@ Labour · Equipment · Materials · Consumables · Sub-contractors · QC Checkli
 
 ## Deployment
 
-Push to `master` auto-deploys via GitHub Actions → cPanel Fileman API (GreenGeeks). Deploy dir: `/home/terranre/public_html/q2m.io/jobs`. `Code.gs` and `README.md` are excluded from deploy. Manual redeploy: Actions → Deploy to cPanel → Run workflow.
+Push to `master` auto-deploys via GitHub Actions → rsync over SSH (GreenGeeks). Deploy dir: `/home/terranre/public_html/q2m.io/jobs`. `Code.gs`, `README.md`, `ARCHIVES/`, and `.claude/` are excluded. Manual redeploy: Actions → Deploy to cPanel → Run workflow.
+
+**Required repo secrets:** `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_PORT`, `CPANEL_USER` — same values as `terranresources-lab`. Add at: Settings → Secrets → Actions. (Migrated from Fileman API which was failing due to GreenGeeks WAF truncating large POSTs.)
 
 ## Conventions
 

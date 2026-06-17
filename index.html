@@ -1653,6 +1653,11 @@ let dashLocFilter = '';
 let confirmResolve = null;
 let confirmReject  = null;
 
+// ── HTML ESCAPE (defined early — used throughout)
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── AUDIT TRAIL (local display + Supabase persist)
 async function logAudit(actionType, jobId, jobNo, description, metadata) {
   addAuditEntry(actionType, description);
@@ -3903,11 +3908,6 @@ function showToast(msg, type='success') {
   m.textContent = msg; t.className = 'toast show ' + type;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), type === 'loading' ? 30000 : 4000);
-}
-
-// ── HTML ESCAPE ──────────────────────────────────────
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── HOME SCREEN ──────────────────────────────────────

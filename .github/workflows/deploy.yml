@@ -2,14 +2,77 @@ name: Deploy to cPanel
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    uses: brandonr2630/projects/.github/workflows/deploy.yml@master
-    with:
-      deploy_dir: /home/terranre/public_html/q2m.io/jobs
-      exclude_extra: ^ARCHIVES/|^Code\.gs$|^README\.md$
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy changed files via rsync
+        env:
+          SSH_USER: ${{ secrets.CPANEL_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          PORT="${SSH_PORT:-22}"
+          DEPLOY_DIR="/home/terranre/public_html/q2m.io/jobs"
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          # workflow_dispatch has no BEFORE; treat as full deploy
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            FILES=$(git ls-files)
+          else
+            FILES=$(git diff --name-only --diff-filter=ACM "$BEFORE" "$AFTER")
+          fi
+
+          EXCLUDE="^\.github/|^\.cpanel\.yml$|^handoff\.md$|^CLAUDE\.md$|^\.claude/|^ARCHIVES/|^Code\.gs$|^README\.md$"
+          FILES=$(echo "$FILES" | grep -Ev "$EXCLUDE" || true)
+
+          if [ -z "$FILES" ]; then
+            echo "No deployable files changed. Done."
+            exit 0
+          fi
+
+          echo "=== Files to deploy ==="
+          echo "$FILES"
+          echo "======================"
+
+          SSH_OPTS="-i ~/.ssh/id_rsa -o BatchMode=yes -o StrictHostKeyChecking=no -p $PORT"
+
+          # Create any needed remote subdirectories
+          SUBDIRS=$(echo "$FILES" | grep "/" | while IFS= read -r f; do dirname "$f"; done | sort -u)
+          if [ -n "$SUBDIRS" ]; then
+            while IFS= read -r subdir; do
+              [ -z "$subdir" ] && continue
+              echo "-> mkdir: $DEPLOY_DIR/$subdir"
+              ssh $SSH_OPTS "$SSH_USER@$SSH_HOST" "mkdir -p \"$DEPLOY_DIR/$subdir\""
+            done <<< "$SUBDIRS"
+          fi
+
+          # Upload all changed files via rsync over SSH
+          echo "-> Uploading..."
+          echo "$FILES" | rsync -avz --files-from=- \
+            -e "ssh $SSH_OPTS" \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_DIR/"
+
+          echo "=== Deploy complete ==="
